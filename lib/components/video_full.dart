@@ -11,6 +11,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:supabase/supabase.dart' as supa;
+import '../common/constants.dart';
 
 class CameraHomeScreen extends StatefulWidget {
   @override
@@ -129,7 +132,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Camera example'),
+        title: const Text('Interview Cam'),
       ),
       body: Column(
         children: <Widget>[
@@ -992,6 +995,29 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 }
 
 class CameraApp extends StatelessWidget {
+  void _onFileUpload() async {
+    final client = supa.SupabaseClient(
+        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+
+    var pickedFile = await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (pickedFile != null) {
+      final file = File(pickedFile.files.first.path);
+
+      await client.storage
+          .from("resume")
+          .upload(pickedFile.files.first.name, file)
+          .then((value) {
+        if (value.error == null) {
+          print(">>> ${pickedFile.files.first.path}");
+          print(">>> ${pickedFile.files.first.name}");
+          print(">>>>>>>>>>>>>>>>>>> ${value.data}");
+        } else {
+          print("Error >>>> ${value.error}");
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<CameraDescription>>(
@@ -1005,7 +1031,21 @@ class CameraApp extends StatelessWidget {
               return Center(child: Text('Error: ${snapshot.error}'));
             else
               return MaterialApp(
-                home: CameraHomeScreen(),
+                home: Column(
+                  children: [
+                    Container(
+                      // TODO: Change this param wrt to different mobile screen height
+                      height: 700,
+                      child: CameraHomeScreen(),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // _onFileUpload();
+                      },
+                      child: Text("Upload"),
+                    )
+                  ],
+                ),
               ); // snapshot.data  :- get your object which is pass from your downloadData() function
           }
         });
