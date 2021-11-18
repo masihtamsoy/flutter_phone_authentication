@@ -25,7 +25,13 @@ class _FileUploadScreenState extends State<FileUploadScreen> {
           .from("resume")
           .upload(pickedFile.files.first.name, file)
           .then((value) {
-        print(">>>>>>>>>>>>>>>>>>> $value");
+        if (value.error == null) {
+          print(">>> ${pickedFile.files.first.path}");
+          print(">>> ${pickedFile.files.first.name}");
+          print(">>>>>>>>>>>>>>>>>>> ${value.data}");
+        } else {
+          print("Error >>>> ${value.error}");
+        }
       });
     }
   }
