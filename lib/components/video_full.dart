@@ -14,6 +14,8 @@ import 'package:video_player/video_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase/supabase.dart' as supa;
 import '../common/constants.dart';
+import '../models/eligibility.dart';
+import 'package:provider/provider.dart';
 
 class CameraHomeScreen extends StatefulWidget {
   @override
@@ -781,6 +783,11 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       if (file != null) {
         showInSnackBar('Video recorded to ${file.path}');
         videoFile = file;
+
+        // On stop set videoFileName and videoFilePath
+        Provider.of<ExamEvaluateModal>(context, listen: false)
+            .video_params(file.name, file.path);
+
         _startVideoPlayer();
       }
     });
@@ -995,27 +1002,28 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 }
 
 class CameraApp extends StatelessWidget {
-  void _onFileUpload() async {
+  void _onFileUpload(context) async {
     final client = supa.SupabaseClient(
         SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
 
-    var pickedFile = await FilePicker.platform.pickFiles(allowMultiple: false);
-    if (pickedFile != null) {
-      final file = File(pickedFile.files.first.path);
+    String videoFileName =
+        Provider.of<ExamEvaluateModal>(context, listen: false).video_file_name;
 
-      await client.storage
-          .from("resume")
-          .upload(pickedFile.files.first.name, file)
-          .then((value) {
-        if (value.error == null) {
-          print(">>> ${pickedFile.files.first.path}");
-          print(">>> ${pickedFile.files.first.name}");
-          print(">>>>>>>>>>>>>>>>>>> ${value.data}");
-        } else {
-          print("Error >>>> ${value.error}");
-        }
-      });
-    }
+    String videoFilePath =
+        Provider.of<ExamEvaluateModal>(context, listen: false).video_file_path;
+
+    final file = File(videoFilePath);
+
+    await client.storage
+        .from("interviewvideos")
+        .upload(videoFileName, file)
+        .then((value) {
+      if (value.error == null) {
+        print("Error >>>> ${value.data}");
+      } else {
+        print("Error >>>> ${value.error}");
+      }
+    });
   }
 
   @override
@@ -1040,7 +1048,7 @@ class CameraApp extends StatelessWidget {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // _onFileUpload();
+                        _onFileUpload(context);
                       },
                       child: Text("Upload"),
                     )

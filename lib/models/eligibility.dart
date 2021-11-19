@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 //INFO: Basic Modal with getter and setter functions
@@ -7,6 +8,9 @@ class ExamEvaluateModal with ChangeNotifier {
   var _quesion_answer = new Map<String, String>();
   var _job_selected = new Map<String, dynamic>();
   String _company_code = "";
+
+  String _video_file_name;
+  String _video_file_path;
 
   // JSON is been converted to string and been moved around in state
   String _ques_journey = "";
@@ -29,6 +33,15 @@ class ExamEvaluateModal with ChangeNotifier {
   String get mobile => _mobile;
 
   String get company_code => _company_code;
+
+  String get video_file_name => _video_file_name;
+
+  String get video_file_path => _video_file_path;
+
+  void video_params(fileName, filePath) {
+    _video_file_name = fileName;
+    _video_file_path = filePath;
+  }
 
   void set_company_code(code) {
     _company_code = code;
