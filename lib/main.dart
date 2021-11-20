@@ -17,7 +17,8 @@ import 'hello.dart';
 import 'calendar.dart';
 
 import './company_code.dart';
-// import './components/video_full.dart';
+import 'components/file_upload_card.dart';
+import './components/video_full.dart';
 // import './models/shared_preferences.dart';
 // import './models/user.dart';
 
@@ -74,6 +75,7 @@ class MyApp extends StatelessWidget {
             } else {
               firstWidget = LoginScreen();
             }
+
             return MaterialApp(
               title: 'Dashhire',
               theme: appTheme,

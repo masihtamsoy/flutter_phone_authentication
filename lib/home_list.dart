@@ -11,7 +11,8 @@ import 'package:file_picker/file_picker.dart';
 
 import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
-import './components/file_upload.dart';
+import 'components/file_upload_card.dart';
+import 'components/camera_app_card.dart';
 // import './utils/supabase_service.dart';
 
 // Avoid namespace conflict with Providers
@@ -124,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 body: _getTotalJobs() == 0
-                    ? FileUpload()
+                    ? CameraAppCard()
                     : ListView.builder(
                         scrollDirection: Axis.vertical,
                         shrinkWrap: true,
