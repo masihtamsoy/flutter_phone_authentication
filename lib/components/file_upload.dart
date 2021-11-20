@@ -5,14 +5,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:supabase/supabase.dart' as supa;
 import '../common/constants.dart';
 
-class FileUploadScreen extends StatefulWidget {
-  FileUploadScreen({Key key}) : super(key: key);
+class FileUpload extends StatefulWidget {
+  FileUpload({Key key}) : super(key: key);
 
   @override
-  _FileUploadScreenState createState() => _FileUploadScreenState();
+  _FileUploadState createState() => _FileUploadState();
 }
 
-class _FileUploadScreenState extends State<FileUploadScreen> {
+class _FileUploadState extends State<FileUpload> {
   void _onFileUpload() async {
     final client = supa.SupabaseClient(
         SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
@@ -36,25 +36,46 @@ class _FileUploadScreenState extends State<FileUploadScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Resume"),
-        ),
-        body: Container(
-          width: double.infinity,
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ElevatedButton(
+  Widget _resumeUploadCard() {
+    return Container(
+        padding: const EdgeInsets.only(bottom: 8),
+        // width: double.infinity,
+        // height: 100,
+        child: Card(
+            child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const ListTile(
+              leading: Icon(Icons.album),
+              title: Text('Upload Resume'),
+              subtitle:
+                  Text('Your resume is needed by companies that you apply to'),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                TextButton(
+                  child: const Text('Upload'),
                   onPressed: () {
                     _onFileUpload();
                   },
-                  child: Text("Upload"),
-                )
-              ]),
-        ));
+                ),
+                const SizedBox(width: 8),
+                // TextButton(
+                //   child: const Text('See Current'),
+                //   onPressed: () {/* ... */},
+                // ),
+                // const SizedBox(width: 8),
+              ],
+            ),
+          ],
+        )));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: _resumeUploadCard(),
+    );
   }
 }
