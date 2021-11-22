@@ -13,7 +13,13 @@ class FileUpload extends StatefulWidget {
 }
 
 class _FileUploadState extends State<FileUpload> {
+  bool _processing = false;
+
   void _onFileUpload() async {
+    setState(() {
+      _processing = true;
+    });
+
     final client = supa.SupabaseClient(
         SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
 
@@ -25,7 +31,11 @@ class _FileUploadState extends State<FileUpload> {
           .from("resume")
           .upload(pickedFile.files.first.name, file)
           .then((value) {
+        setState(() {
+          _processing = false;
+        });
         if (value.error == null) {
+          // Make API call to onbarding to save latest URL from storage
           print(">>> ${pickedFile.files.first.path}");
           print(">>> ${pickedFile.files.first.name}");
           print(">>>>>>>>>>>>>>>>>>> ${value.data}");
@@ -55,17 +65,30 @@ class _FileUploadState extends State<FileUpload> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: const Text('Upload'),
+                  child: Row(
+                    children: [
+                      Text('Upload'),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Container(
+                          width: 12,
+                          height: 12,
+                          child: _processing
+                              ? CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                )
+                              : Icon(
+                                  Icons.upload,
+                                  size: 16,
+                                ))
+                    ],
+                  ),
                   onPressed: () {
                     _onFileUpload();
                   },
                 ),
                 const SizedBox(width: 8),
-                // TextButton(
-                //   child: const Text('See Current'),
-                //   onPressed: () {/* ... */},
-                // ),
-                // const SizedBox(width: 8),
               ],
             ),
           ],
