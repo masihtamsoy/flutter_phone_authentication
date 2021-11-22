@@ -17,26 +17,6 @@ class FileUpload extends StatefulWidget {
 class _FileUploadState extends State<FileUpload> {
   bool _processing = false;
 
-  void _updateOnboarding(String uploadString) async {
-    String mobile =
-        Provider.of<ExamEvaluateModal>(context, listen: false).mobile;
-
-    final client = supa.SupabaseClient(
-        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
-
-    final updateResponse = await client
-        .from("onboarding")
-        .update({'resume': uploadString})
-        .eq('mobile', mobile)
-        .execute();
-
-    if (updateResponse.error == null) {
-      print("Able to successfully update");
-    } else {
-      print("Unable to update");
-    }
-  }
-
   void _onFileUpload() async {
     setState(() {
       _processing = true;
@@ -58,11 +38,12 @@ class _FileUploadState extends State<FileUpload> {
         });
         if (value.error == null) {
           // Make API call to onbarding to save latest URL from storage
-          print(">>> ${pickedFile.files.first.path}");
-          print(">>> ${pickedFile.files.first.name}");
+          // print(">>> ${pickedFile.files.first.path}");
+          // print(">>> ${pickedFile.files.first.name}");
           print(">>>>>>>>>>>>>>>>>>> ${value.data}");
           final uploadString = value.data;
-          _updateOnboarding(uploadString);
+          OnboardingOperation.updateOnboarding(
+              uploadString, 'resume', false, context);
         } else {
           print("Error >>>> ${value.error}");
         }

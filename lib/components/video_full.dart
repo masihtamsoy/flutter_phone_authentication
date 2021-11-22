@@ -27,6 +27,7 @@ class CameraHomeScreen extends StatefulWidget {
 /// Returns a suitable camera icon for [direction].
 IconData getCameraLensIcon(CameraLensDirection direction) {
   switch (direction) {
+    // INFO: back camera is not required
     case CameraLensDirection.back:
       return Icons.camera_rear;
     case CameraLensDirection.front:
@@ -163,9 +164,10 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
           Padding(
             padding: const EdgeInsets.all(5.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 _cameraTogglesRowWidget(),
+                _uploadWidget(context),
                 _thumbnailWidget(),
               ],
             ),
@@ -222,6 +224,15 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         .clamp(_minAvailableZoom, _maxAvailableZoom);
 
     await controller.setZoomLevel(_currentScale);
+  }
+
+  Widget _uploadWidget(context) {
+    return ElevatedButton(
+      onPressed: () {
+        _onFileUpload(context);
+      },
+      child: Text("Upload"),
+    );
   }
 
   /// Display the thumbnail of the captured image or video.
@@ -999,10 +1010,12 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     logError(e.code, e.description);
     showInSnackBar('Error: ${e.code}\n${e.description}');
   }
-}
 
-class CameraApp extends StatelessWidget {
   void _onFileUpload(context) async {
+    // setState(() {
+    //   _processing = true;
+    // });
+
     final client = supa.SupabaseClient(
         SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
 
@@ -1018,13 +1031,28 @@ class CameraApp extends StatelessWidget {
         .from("interviewvideos")
         .upload(videoFileName, file)
         .then((value) {
+      // setState(() {
+      //   _processing = false;
+      // });
       if (value.error == null) {
-        print("Error >>>> ${value.data}");
+        print("Value >>>> ${value.data}");
+        final uploadString = value.data;
+        OnboardingOperation.updateOnboarding(
+            uploadString, 'video', true, context);
       } else {
         print("Error >>>> ${value.error}");
       }
     });
   }
+}
+
+class CameraApp extends StatefulWidget {
+  @override
+  State<CameraApp> createState() => _CameraAppState();
+}
+
+class _CameraAppState extends State<CameraApp> {
+  bool _processing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1038,23 +1066,10 @@ class CameraApp extends StatelessWidget {
             if (snapshot.hasError)
               return Center(child: Text('Error: ${snapshot.error}'));
             else
-              return MaterialApp(
-                home: Column(
-                  children: [
-                    Container(
-                      // TODO: Change this param wrt to different mobile screen height
-                      height: 700,
-                      child: CameraHomeScreen(),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        _onFileUpload(context);
-                      },
-                      child: Text("Upload"),
-                    )
-                  ],
-                ),
-              ); // snapshot.data  :- get your object which is pass from your downloadData() function
+              return SizedBox.expand(
+                child:
+                    Container(color: Colors.black, child: CameraHomeScreen()),
+              );
           }
         });
   }

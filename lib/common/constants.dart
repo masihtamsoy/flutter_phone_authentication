@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/eligibility.dart';
+import 'package:supabase/supabase.dart' as supa;
+import '../home_list.dart';
+
 class SupaConstants {
   SupaConstants._();
 
@@ -5,4 +11,35 @@ class SupaConstants {
 
   static const supabaseKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzNDI5NDc0OSwiZXhwIjoxOTQ5ODcwNzQ5fQ.78qQYcAGImoc5oAxZC9WMs5DGDYMVjsCWb8qYMhNFUA';
+}
+
+class OnboardingOperation {
+  OnboardingOperation._();
+
+  static void updateOnboarding(
+      String uploadString, String field, bool changeRoute, context) async {
+    String mobile =
+        Provider.of<ExamEvaluateModal>(context, listen: false).mobile;
+
+    final client = supa.SupabaseClient(
+        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+
+    final updateResponse = await client
+        .from("onboarding")
+        .update({field: uploadString})
+        .eq('mobile', mobile)
+        .execute();
+
+    if (updateResponse.error == null) {
+      if (changeRoute) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+            (route) => false);
+      } else {}
+      print("Able to successfully update");
+    } else {
+      print("Unable to update");
+    }
+  }
 }
