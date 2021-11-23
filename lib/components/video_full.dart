@@ -246,6 +246,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
               child: _processing
                   ? CircularProgressIndicator(
                       strokeWidth: 2,
+                      color: Colors.white,
                     )
                   : Icon(
                       Icons.upload,
@@ -254,7 +255,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         ],
       ),
       onPressed: () {
-        _onFileUpload(context);
+        if (_processing == false) {
+          _onFileUpload(context);
+        }
       },
     );
   }
