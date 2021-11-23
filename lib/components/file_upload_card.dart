@@ -70,29 +70,26 @@ class _FileUploadState extends State<FileUpload> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: Row(
-                    children: [
-                      Text('Upload'),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Container(
-                          width: 12,
-                          height: 12,
-                          child: _processing
-                              ? CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                )
-                              : Icon(
-                                  Icons.upload,
-                                  size: 16,
-                                ))
-                    ],
-                  ),
-                  onPressed: () {
-                    _onFileUpload();
-                  },
-                ),
+                    child: Row(
+                      children: [
+                        Text('Upload'),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Container(
+                            width: 12,
+                            height: 12,
+                            child: _processing
+                                ? CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  )
+                                : Icon(
+                                    Icons.upload,
+                                    size: 16,
+                                  ))
+                      ],
+                    ),
+                    onPressed: _processing ? null : _onFileUpload),
                 const SizedBox(width: 8),
               ],
             ),

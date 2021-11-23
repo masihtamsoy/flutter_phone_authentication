@@ -67,6 +67,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
   double _currentScale = 1.0;
+  bool _processing = false;
   double _baseScale = 1.0;
 
   // Counting pointers (number of user fingers on screen)
@@ -106,6 +107,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
   @override
   void dispose() {
+    print("<<<<<<<<<<<<<<<<<<<<<<<<<<Dispose>>>>>>>>>>>>>>>>>>>>>");
     _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
     _flashModeControlRowAnimationController.dispose();
     _exposureModeControlRowAnimationController.dispose();
@@ -164,9 +166,12 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
           Padding(
             padding: const EdgeInsets.all(5.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 _cameraTogglesRowWidget(),
+                SizedBox(
+                  width: 25,
+                ),
                 _uploadWidget(context),
                 _thumbnailWidget(),
               ],
@@ -227,11 +232,30 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   Widget _uploadWidget(context) {
+    print("upload widget >>>>>>>>>>>>>>>>> $_processing");
     return ElevatedButton(
+      child: Row(
+        children: [
+          Text('Upload'),
+          SizedBox(
+            width: 2,
+          ),
+          Container(
+              width: 12,
+              height: 12,
+              child: _processing
+                  ? CircularProgressIndicator(
+                      strokeWidth: 2,
+                    )
+                  : Icon(
+                      Icons.upload,
+                      size: 16,
+                    ))
+        ],
+      ),
       onPressed: () {
         _onFileUpload(context);
       },
-      child: Text("Upload"),
     );
   }
 
@@ -529,15 +553,16 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
-        IconButton(
-          icon: const Icon(Icons.camera_alt),
-          color: Colors.blue,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  !cameraController.value.isRecordingVideo
-              ? onTakePictureButtonPressed
-              : null,
-        ),
+        // // take pics
+        // IconButton(
+        //   icon: const Icon(Icons.camera_alt),
+        //   color: Colors.blue,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           !cameraController.value.isRecordingVideo
+        //       ? onTakePictureButtonPressed
+        //       : null,
+        // ),
         IconButton(
           icon: const Icon(Icons.videocam),
           color: Colors.blue,
@@ -570,15 +595,16 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
               ? onStopButtonPressed
               : null,
         ),
-        IconButton(
-          icon: const Icon(Icons.pause_presentation),
-          color:
-              cameraController != null && cameraController.value.isPreviewPaused
-                  ? Colors.red
-                  : Colors.blue,
-          onPressed:
-              cameraController == null ? null : onPausePreviewButtonPressed,
-        ),
+        // // Pause camera while recording video
+        // IconButton(
+        //   icon: const Icon(Icons.pause_presentation),
+        //   color:
+        //       cameraController != null && cameraController.value.isPreviewPaused
+        //           ? Colors.red
+        //           : Colors.blue,
+        //   onPressed:
+        //       cameraController == null ? null : onPausePreviewButtonPressed,
+        // ),
       ],
     );
   }
@@ -1012,9 +1038,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   void _onFileUpload(context) async {
-    // setState(() {
-    //   _processing = true;
-    // });
+    setState(() {
+      _processing = true;
+    });
 
     final client = supa.SupabaseClient(
         SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
@@ -1031,9 +1057,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         .from("interviewvideos")
         .upload(videoFileName, file)
         .then((value) {
-      // setState(() {
-      //   _processing = false;
-      // });
+      setState(() {
+        _processing = true;
+      });
       if (value.error == null) {
         print("Value >>>> ${value.data}");
         final uploadString = value.data;
@@ -1052,8 +1078,6 @@ class CameraApp extends StatefulWidget {
 }
 
 class _CameraAppState extends State<CameraApp> {
-  bool _processing = false;
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<CameraDescription>>(
@@ -1078,11 +1102,15 @@ class _CameraAppState extends State<CameraApp> {
 List<CameraDescription> cameras = [];
 
 Future<List<CameraDescription>> _getCameras() async {
+  List<CameraDescription> availCameras = [];
   // Fetch the available cameras before initializing the app.
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    cameras = await availableCameras();
-    print("<<<<<<<<<<>>>>>>>>>> $cameras");
+    availCameras = await availableCameras();
+    print("<<<<<<<<<<>>>>>>>>>> $availCameras");
+    // Show front camera only
+    cameras = [availCameras[1]];
+
     return cameras;
   } on CameraException catch (e) {
     logError(e.code, e.description);
