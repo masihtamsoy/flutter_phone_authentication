@@ -36,6 +36,8 @@ class OnboardingOperation {
             context,
             MaterialPageRoute(builder: (context) => HomeScreen()),
             (route) => false);
+
+        // Navigator.of(context).pop();
       } else {}
       print("Able to successfully update");
     } else {
