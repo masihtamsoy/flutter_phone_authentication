@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:flutter/services.dart';
 
 import './location/permission_status.dart';
 import './location/service_enabled.dart';
@@ -7,8 +8,61 @@ import './location/get_location.dart';
 
 import './../widgets/button_widget.dart';
 
-class LocationCapture extends StatelessWidget {
-  const LocationCapture({Key key}) : super(key: key);
+class LocationCapture extends StatefulWidget {
+  LocationCapture({Key key}) : super(key: key);
+
+  @override
+  State<LocationCapture> createState() => _LocationCaptureState();
+}
+
+class _LocationCaptureState extends State<LocationCapture> {
+  final Location location = Location();
+
+  var _permissionGranted;
+  bool _serviceEnabled;
+  bool _loading = false;
+
+  LocationData _location;
+  String _error;
+
+  Future<void> _requestPermission() async {
+    if (_permissionGranted != PermissionStatus.granted) {
+      final PermissionStatus permissionRequestedResult =
+          await location.requestPermission();
+      setState(() {
+        _permissionGranted = permissionRequestedResult;
+      });
+    }
+  }
+
+  Future<void> _requestService() async {
+    if (_serviceEnabled == true) {
+      return;
+    }
+    final bool serviceRequestedResult = await location.requestService();
+    setState(() {
+      _serviceEnabled = serviceRequestedResult;
+    });
+  }
+
+  Future<void> _getLocation() async {
+    setState(() {
+      _error = null;
+      _loading = true;
+    });
+    try {
+      final LocationData _locationResult = await location.getLocation();
+      setState(() {
+        _location = _locationResult;
+        _loading = false;
+      });
+    } on PlatformException catch (err) {
+      setState(() {
+        _error = err.code;
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +71,7 @@ class LocationCapture extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
+          // [@NOTE][@INFO]Figure way to use it as service
           // PermissionStatusWidget(),
           // Divider(height: 32),
           // ServiceEnabledWidget(),
@@ -51,16 +106,18 @@ class LocationCapture extends StatelessWidget {
             ),
           ),
           Container(
-            child:
-                RoundedButtonWidget(buttonText: 'Continue', onPressed: () {}),
+            child: RoundedButtonWidget(
+                buttonText: 'Continue',
+                onPressed: () {
+                  _requestPermission();
+                  _requestService();
+                  _getLocation();
+                }),
           ),
-          // ListenLocationWidget(),
-          // Divider(height: 32),
-          // ChangeSettings(),
-          // Divider(height: 32),
-          // EnableInBackgroundWidget(),
-          // Divider(height: 32),
-          // ChangeNotificationWidget()
+          Text(
+            'Location: ' + (_error ?? '${_location ?? "unknown"}'),
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
         ],
       ),
     );

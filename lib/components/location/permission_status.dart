@@ -3,6 +3,7 @@ import 'package:location/location.dart';
 
 class PermissionStatusWidget extends StatefulWidget {
   const PermissionStatusWidget({Key key}) : super(key: key);
+  void requestPermission() => createState()._requestPermission();
 
   @override
   _PermissionStatusState createState() => _PermissionStatusState();

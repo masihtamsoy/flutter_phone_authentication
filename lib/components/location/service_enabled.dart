@@ -4,6 +4,9 @@ import 'package:location/location.dart';
 class ServiceEnabledWidget extends StatefulWidget {
   const ServiceEnabledWidget({Key key}) : super(key: key);
 
+  // @INFO: Able to access by error on setState
+  void requestService() => createState()._requestService();
+
   @override
   _ServiceEnabledState createState() => _ServiceEnabledState();
 }
