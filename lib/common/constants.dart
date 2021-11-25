@@ -17,7 +17,7 @@ class OnboardingOperation {
   OnboardingOperation._();
 
   static void updateOnboarding(
-      String uploadString, String field, bool changeRoute, context) async {
+      dynamic uploadString, String field, bool changeRoute, context) async {
     String mobile =
         Provider.of<ExamEvaluateModal>(context, listen: false).mobile;
 

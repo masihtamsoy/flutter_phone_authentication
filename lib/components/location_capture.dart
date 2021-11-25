@@ -7,6 +7,7 @@ import './location/service_enabled.dart';
 import './location/get_location.dart';
 
 import './../widgets/button_widget.dart';
+import '../common/constants.dart';
 
 class LocationCapture extends StatefulWidget {
   LocationCapture({Key key}) : super(key: key);
@@ -52,10 +53,19 @@ class _LocationCaptureState extends State<LocationCapture> {
     });
     try {
       final LocationData _locationResult = await location.getLocation();
+
       setState(() {
         _location = _locationResult;
         _loading = false;
       });
+
+      double lat = _locationResult.latitude;
+      double long = _locationResult.longitude;
+
+      // INFO: update lat and long to table and goto Home page
+      OnboardingOperation.updateOnboarding(lat, 'lat', false, context);
+
+      OnboardingOperation.updateOnboarding(long, 'long', true, context);
     } on PlatformException catch (err) {
       setState(() {
         _error = err.code;

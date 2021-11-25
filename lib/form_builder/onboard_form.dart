@@ -8,6 +8,7 @@ import '../utils/supabase_service.dart';
 import '../models/eligibility.dart';
 import 'json_schema.dart';
 import '../home_list.dart';
+import '../components/location_capture.dart';
 
 class OnboardingScreen extends StatefulWidget {
   OnboardingScreen({Key key}) : super(key: key);
@@ -130,7 +131,7 @@ class _OnboardingScreen extends State<OnboardingScreen> {
 
       Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => LocationCapture()),
           (route) => false);
       // print("<><><><><><><><><><><>< $data");
     } else {
