@@ -224,69 +224,77 @@ class _CoreFormState extends State<JsonSchema> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // When parent using SingleChildScrollView
-      // Flexible and Expanded widgets un-usable
-      // INFO: does not work with more that 3 fields in one page
-      // flex:1,
-      // fit: FlexFit.loose,
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              // Text(question),
-              FormBuilder(
-                  key: _formKey,
-                  // enabled: false,
-                  autovalidateMode:
-                      formGeneral['autoValidated'] ?? AutovalidateMode.disabled,
-                  skipDisabled: true,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: jsonToForm(),
-                  )),
-              const SizedBox(height: 20),
+      alignment: Alignment.center,
+      child: SizedBox(
+        width: 380,
+        child: Container(
+          // When parent using SingleChildScrollView
+          // Flexible and Expanded widgets un-usable
+          // INFO: does not work with more that 3 fields in one page
+          // flex:1,
+          // fit: FlexFit.loose,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  // Text(question),
+                  FormBuilder(
+                      key: _formKey,
+                      // enabled: false,
+                      autovalidateMode: formGeneral['autoValidated'] ??
+                          AutovalidateMode.disabled,
+                      skipDisabled: true,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: jsonToForm(),
+                      )),
+                  const SizedBox(height: 20),
 
-              RoundedButtonWidget(
-                buttonText: 'Continue',
-                onPressed: () {
-                  // Responsibilities of Screen's form submit
-                  // 1. update model => assignMark
-                  // 2. call widget.onSubmitSave()
+                  RoundedButtonWidget(
+                    buttonText: 'Continue',
+                    onPressed: () {
+                      // Responsibilities of Screen's form submit
+                      // 1. update model => assignMark
+                      // 2. call widget.onSubmitSave()
 
-                  //TODO: Write better success and faliure on submit button clicked
-                  if (_formKey.currentState?.saveAndValidate() ?? false) {
-                    List fields = formGeneral['fields'];
+                      //TODO: Write better success and faliure on submit button clicked
+                      if (_formKey.currentState?.saveAndValidate() ?? false) {
+                        List fields = formGeneral['fields'];
 
-                    fields.forEach((field) {
-                      String name = field['name'];
+                        fields.forEach((field) {
+                          String name = field['name'];
 
-                      String ans = _formKey.currentState.fields[name].value;
+                          String ans = _formKey.currentState.fields[name].value;
 
-                      print("asdasd $name >> $field >> $ans");
+                          print("asdasd $name >> $field >> $ans");
 
-                      // Assign mark to answers
-                      context.read<ExamEvaluateModal>().assignMark(field, ans);
+                          // Assign mark to answers
+                          context
+                              .read<ExamEvaluateModal>()
+                              .assignMark(field, ans);
 
-                      print(context
-                          .read<ExamEvaluateModal>()
-                          .question_answer_mark);
+                          print(context
+                              .read<ExamEvaluateModal>()
+                              .question_answer_mark);
 
-                      // INFO: Works but not a good place to declare
-                      // final model = Provider.of<ExamEvaluateModal>(context);
-                      // print("mode l $model");
-                    });
+                          // INFO: Works but not a good place to declare
+                          // final model = Provider.of<ExamEvaluateModal>(context);
+                          // print("mode l $model");
+                        });
 
-                    // On submit button pressed
-                    widget.onSubmitSave(context, _formKey);
-                  } else {
-                    print(_formKey.currentState?.value);
-                    print('validation failed');
-                  }
-                },
-              ),
-            ]),
+                        // On submit button pressed
+                        widget.onSubmitSave(context, _formKey);
+                      } else {
+                        print(_formKey.currentState?.value);
+                        print('validation failed');
+                      }
+                    },
+                  ),
+                ]),
+          ),
+        ),
       ),
     );
   }
