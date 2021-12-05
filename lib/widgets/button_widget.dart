@@ -12,14 +12,17 @@ class RoundedButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      height: 35.0,
-      minWidth: 370.0,
-      color: Theme.of(context).primaryColor,
-      textColor: Colors.white,
-      child: new Text(buttonText),
-      onPressed: onPressed,
-      splashColor: Colors.deepPurple[300],
+    return ConstrainedBox(
+      constraints: const BoxConstraints.tightFor(width: 300, height: 50),
+      child: ElevatedButton(
+        style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(50.0),
+        ))),
+        onPressed: onPressed,
+        child: Text("$buttonText".toUpperCase()),
+      ),
     );
   }
 }

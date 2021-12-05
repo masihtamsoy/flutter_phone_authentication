@@ -7,12 +7,12 @@ import 'package:phone_auth_project/login.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 
 import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
-import 'components/file_upload_card.dart';
-import 'components/camera_app_card.dart';
+// import 'components/file_upload_card.dart';
+// import 'components/camera_app_card.dart';
 // import './utils/supabase_service.dart';
 
 // Avoid namespace conflict with Providers
@@ -128,9 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       // Show File upload card
-                      FileUpload(),
+                      // FileUpload(),
                       // Show video upload card
-                      CameraAppCard(),
+                      // CameraAppCard(),
                       // Show jobs card
                       _getTotalJobs() == 0
                           ? Text('')
@@ -209,30 +209,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 "Test comprises of MCQ and aptitude",
                                                 style: TextStyle(fontSize: 10),
                                               ),
-                                              MaterialButton(
-                                                color: Theme.of(context)
-                                                    .primaryColor,
-                                                onPressed: () {
-                                                  // maintain state: job_selected
-                                                  Provider.of<ExamEvaluateModal>(
-                                                          context,
-                                                          listen: false)
-                                                      .job_select(
-                                                          _getJob(index));
+                                              ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints
+                                                            .tightFor(
+                                                        width: 100, height: 40),
+                                                child: MaterialButton(
+                                                  color: Theme.of(context)
+                                                      .primaryColor,
+                                                  onPressed: () {
+                                                    // maintain state: job_selected
+                                                    Provider.of<ExamEvaluateModal>(
+                                                            context,
+                                                            listen: false)
+                                                        .job_select(
+                                                            _getJob(index));
 
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            new QuestionJourney(
-                                                                screenIndex:
-                                                                    0)),
-                                                  );
-                                                },
-                                                child: const Text(
-                                                  'Start Test',
-                                                  style: TextStyle(
-                                                      color: Colors.white),
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              new QuestionJourney(
+                                                                  screenIndex:
+                                                                      0)),
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    'Start Test'.toUpperCase(),
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
                                                 ),
                                               ),
                                             ],

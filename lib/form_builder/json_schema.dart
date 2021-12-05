@@ -246,6 +246,8 @@ class _CoreFormState extends State<JsonSchema> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: jsonToForm(),
                   )),
+              const SizedBox(height: 20),
+
               RoundedButtonWidget(
                 buttonText: 'Continue',
                 onPressed: () {
