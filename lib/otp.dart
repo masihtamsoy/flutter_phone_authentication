@@ -156,9 +156,11 @@ class _OTPScreenState extends State<OTPScreen> {
   Future<void> _confirmCodeWeb(String pin) async {
     if (webConfirmationResult != null) {
       try {
-        await webConfirmationResult
-            .confirm(pin)
-            .then((value) => {print('-----value-------$value')});
+        await webConfirmationResult.confirm(pin).then((value) async {
+          if (value.user != null) {
+            _actionOnUserPresent(context);
+          }
+        });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed to sign in: ${e.toString()}')));
