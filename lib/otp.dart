@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth_project/home_list.dart';
@@ -10,6 +12,8 @@ import './../models/eligibility.dart';
 import './company_code.dart';
 import './utils/supabase_service.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class OTPScreen extends StatefulWidget {
   final String phone;
   OTPScreen(this.phone);
@@ -20,6 +24,8 @@ class OTPScreen extends StatefulWidget {
 class _OTPScreenState extends State<OTPScreen> {
   // User related
   String uid;
+  ConfirmationResult webConfirmationResult;
+
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   final GlobalKey<ScaffoldState> _scaffoldkey = GlobalKey<ScaffoldState>();
@@ -68,23 +74,29 @@ class _OTPScreenState extends State<OTPScreen> {
                   followingFieldDecoration: pinPutDecoration,
                   pinAnimationType: PinAnimationType.fade,
                   onSubmit: (pin) async {
-                    try {
-                      await FirebaseAuth.instance
-                          .signInWithCredential(PhoneAuthProvider.credential(
-                              verificationId: _verificationCode, smsCode: pin))
-                          .then((value) async {
-                        if (value.user != null) {
-                          _actionOnUserPresent(context);
-                        }
-                      });
-                    } catch (e) {
-                      FocusScope.of(context).unfocus();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('invalid OTP')));
+                    print("PIN--------------$pin---------");
+                    if (kIsWeb) {
+                      _confirmCodeWeb(pin);
+                    } else {
+                      try {
+                        await FirebaseAuth.instance
+                            .signInWithCredential(PhoneAuthProvider.credential(
+                                verificationId: _verificationCode,
+                                smsCode: pin))
+                            .then((value) async {
+                          if (value.user != null) {
+                            _actionOnUserPresent(context);
+                          }
+                        });
+                      } catch (e) {
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('invalid OTP')));
 
-                      // depricated
-                      // _scaffoldkey.currentState
-                      //     .showSnackBar(SnackBar(content: Text('invalid OTP')));
+                        // depricated
+                        // _scaffoldkey.currentState
+                        //     .showSnackBar(SnackBar(content: Text('invalid OTP')));
+                      }
                     }
                   },
                 ),
@@ -96,7 +108,11 @@ class _OTPScreenState extends State<OTPScreen> {
                 label: "Resend OTP",
                 timeOutInSeconds: 50,
                 onPressed: () {
-                  _verifyPhone();
+                  if (kIsWeb) {
+                    _verifyWebPhoneNumber();
+                  } else {
+                    _verifyPhone();
+                  }
                 },
                 disabledColor: Colors.grey,
                 color: Colors.deepPurple[400],
@@ -137,6 +153,30 @@ class _OTPScreenState extends State<OTPScreen> {
         (route) => false);
   }
 
+  Future<void> _confirmCodeWeb(String pin) async {
+    if (webConfirmationResult != null) {
+      try {
+        await webConfirmationResult
+            .confirm(pin)
+            .then((value) => {print('-----value-------$value')});
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to sign in: ${e.toString()}')));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Please input sms code received after verifying phone number')));
+    }
+  }
+
+  Future<void> _verifyWebPhoneNumber() async {
+    ConfirmationResult confirmationResult =
+        await _auth.signInWithPhoneNumber('+91${widget.phone}');
+
+    webConfirmationResult = confirmationResult;
+  }
+
   _verifyPhone() async {
     await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: '+91${widget.phone}',
@@ -169,6 +209,10 @@ class _OTPScreenState extends State<OTPScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _verifyPhone();
+    if (kIsWeb) {
+      _verifyWebPhoneNumber();
+    } else {
+      _verifyPhone();
+    }
   }
 }
