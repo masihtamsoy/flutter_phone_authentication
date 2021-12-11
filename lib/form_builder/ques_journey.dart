@@ -118,16 +118,18 @@ class _QuestionJourneyState extends State<QuestionJourney> {
                     title: new Text("Test"),
                     automaticallyImplyLeading: true,
                     actions: [
-                      Countdown(
-                          countdownController: countdownController,
-                          builder: (_, Duration time) {
-                            return Text(
-                                'minutes: ${time.inMinutes % 60} seconds: ${time.inSeconds % 60}');
-                            // return Text(
-                            //   'hours--: ${time.inHours} minutes: ${time.inMinutes % 60} seconds: ${time.inSeconds % 60}',
-                            //   style: TextStyle(fontSize: 20),
-                            // );
-                          })
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Countdown(
+                              countdownController: countdownController,
+                              builder: (_, Duration time) {
+                                return Text(
+                                    '${time.inMinutes % 60} : ${time.inSeconds % 60}',
+                                    style: TextStyle(fontSize: 18));
+                              }),
+                        ),
+                      )
                     ],
                   ),
                   body: SingleChildScrollView(
