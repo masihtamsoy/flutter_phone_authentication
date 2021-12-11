@@ -5,6 +5,9 @@ import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:supabase/supabase.dart' as supa;
+
+import '../common/constants.dart';
 
 /*
  * getUserMedia sample
@@ -20,6 +23,8 @@ class _WebCamState extends State<WebCam> {
   MediaStream _localStream;
   final _localRenderer = RTCVideoRenderer();
   bool _inCalling = false;
+  bool _previewReady = false;
+  dynamic _objectUrl = '';
   MediaRecorder _mediaRecorder;
 
   List<MediaDeviceInfo> _cameras;
@@ -30,6 +35,7 @@ class _WebCamState extends State<WebCam> {
   @override
   void initState() {
     super.initState();
+    // start with video call
     _makeCall();
 
     initRenderers();
@@ -114,10 +120,15 @@ class _WebCamState extends State<WebCam> {
     final objectUrl = await _mediaRecorder?.stop();
     setState(() {
       _mediaRecorder = null;
+      _previewReady = true;
+      _objectUrl = objectUrl;
     });
-    print(objectUrl);
+  }
+
+  void _openRecordingPreview() {
+    print(_objectUrl);
     // ignore: unsafe_html
-    html.window.open(objectUrl, '_blank');
+    html.window.open(_objectUrl, '_blank');
   }
 
   void _captureFrame() async {
@@ -159,11 +170,48 @@ class _WebCamState extends State<WebCam> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _isRec ? _stopRecording : _startRecording,
-        tooltip: _isRec ? 'Stop Record' : 'Start Record',
-        child: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
-      ),
+      floatingActionButton: !_previewReady
+          ? FloatingActionButton(
+              onPressed: _isRec ? _stopRecording : _startRecording,
+              tooltip: _isRec ? 'Stop Record' : 'Start Record',
+              child: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(width: 30),
+                FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      _previewReady = false;
+                    });
+                  },
+                  tooltip: 'Redo',
+                  child: Icon(Icons.undo),
+                ),
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  onPressed: () {
+                    _openRecordingPreview();
+                  },
+                  tooltip: 'Preview',
+                  child: Icon(Icons.play_arrow),
+                ),
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  onPressed: () async {
+                    final client = supa.SupabaseClient(
+                        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+
+                    // await client.storage
+                    //     .from("interviewvideos")
+                    //     .upload(_objectUrl, html.Blob(_objectUrl));
+                  },
+                  tooltip: 'Done',
+                  child: Icon(Icons.arrow_forward),
+                )
+              ],
+            ),
     );
   }
 
