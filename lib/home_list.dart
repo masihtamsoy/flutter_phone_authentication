@@ -12,6 +12,7 @@ import 'package:flutter_countdown_timer/index.dart';
 
 import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
+import './congrates.dart';
 // import 'components/file_upload_card.dart';
 // import 'components/camera_app_card.dart';
 // import './utils/supabase_service.dart';
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final selectResponse = await client.rpc('get_job_list', params: {
       'company_code_param': companyCode,
-      'mobile_number_param': mobile
+      'mobile_number_param': mobile,
     }).execute();
 
     data = json.encode({});
@@ -232,10 +233,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         countdownController =
                                                         CountdownController(
                                                             duration: Duration(
-                                                                minutes: 1),
+                                                                // seconds: 10,
+                                                                minutes: 10),
                                                             onEnd: () {
+                                                              /// open dialog box: with 'continue'
+                                                              /// msg: Your time to complete test has expired. Your application has been submitted!
+                                                              /// goto congrates page
                                                               print(
                                                                   '-----onEnd---- counter---minutes--');
+
+                                                              Navigator.pushAndRemoveUntil(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                      builder: (context) => Congrates(
+                                                                          isTimeouted:
+                                                                              true)),
+                                                                  (route) =>
+                                                                      false);
                                                             });
 
                                                     countdownController.start();
@@ -246,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         .countdownController_select(
                                                             countdownController);
 
-                                                    //-------------
+                                                    //-----------------------------
 
                                                     Navigator.push(
                                                       context,
