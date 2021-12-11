@@ -15,12 +15,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_countdown_timer/index.dart';
 
 import './json_schema.dart';
 import '../congrates.dart';
 
 import './../models/eligibility.dart';
 import './../utils/supabase_service.dart';
+import './../widgets/countdown_timer_widget.dart';
 
 // QuestionJourney extends Journey
 // In future there can be other journeys that can be extracted from Journey class
@@ -97,6 +99,10 @@ class _QuestionJourneyState extends State<QuestionJourney> {
     String company_name = Provider.of<ExamEvaluateModal>(context, listen: false)
         .job_selected['company_name'];
 
+    CountdownController countdownController =
+        Provider.of<ExamEvaluateModal>(context, listen: false)
+            .countdownController;
+
     return FutureBuilder(
         future: getJobRelationQuestion(), // function where you call your api
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -111,6 +117,18 @@ class _QuestionJourneyState extends State<QuestionJourney> {
                   appBar: new AppBar(
                     title: new Text("Test"),
                     automaticallyImplyLeading: true,
+                    actions: [
+                      Countdown(
+                          countdownController: countdownController,
+                          builder: (_, Duration time) {
+                            return Text(
+                                'minutes: ${time.inMinutes % 60} seconds: ${time.inSeconds % 60}');
+                            // return Text(
+                            //   'hours--: ${time.inHours} minutes: ${time.inMinutes % 60} seconds: ${time.inSeconds % 60}',
+                            //   style: TextStyle(fontSize: 20),
+                            // );
+                          })
+                    ],
                   ),
                   body: SingleChildScrollView(
                     child: new Column(

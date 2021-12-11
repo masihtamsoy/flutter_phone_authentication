@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:file_picker/file_picker.dart';
+import 'package:flutter_countdown_timer/index.dart';
 
 import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
@@ -224,6 +225,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             listen: false)
                                                         .job_select(
                                                             _getJob(index));
+
+                                                    /// Start counter global
+                                                    // initiate CountdownTimer-------
+                                                    CountdownController
+                                                        countdownController =
+                                                        CountdownController(
+                                                            duration: Duration(
+                                                                minutes: 1),
+                                                            onEnd: () {
+                                                              print(
+                                                                  '-----onEnd---- counter---minutes--');
+                                                            });
+
+                                                    countdownController.start();
+
+                                                    Provider.of<ExamEvaluateModal>(
+                                                            context,
+                                                            listen: false)
+                                                        .countdownController_select(
+                                                            countdownController);
+
+                                                    //-------------
 
                                                     Navigator.push(
                                                       context,

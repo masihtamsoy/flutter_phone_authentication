@@ -48,6 +48,7 @@ dependencies:
     git: https://github.com/masihtamsoy/dash_widget.git
   mobx: ^2.0.0
   flutter_mobx: ^2.0.0
+  flutter_countdown_timer: ^4.1.0
 
 
 dev_dependencies:
