@@ -9,14 +9,14 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 /*
  * getUserMedia sample
  */
-class GetUserMediaSample extends StatefulWidget {
+class WebCam extends StatefulWidget {
   static String tag = 'get_usermedia_sample';
 
   @override
-  _GetUserMediaSampleState createState() => _GetUserMediaSampleState();
+  _WebCamState createState() => _WebCamState();
 }
 
-class _GetUserMediaSampleState extends State<GetUserMediaSample> {
+class _WebCamState extends State<WebCam> {
   MediaStream _localStream;
   final _localRenderer = RTCVideoRenderer();
   bool _inCalling = false;
@@ -30,6 +30,8 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   @override
   void initState() {
     super.initState();
+    _makeCall();
+
     initRenderers();
 
     navigator.mediaDevices.enumerateDevices().then((md) {
@@ -142,39 +144,7 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('GetUserMedia API Test'),
-        actions: _inCalling
-            ? <Widget>[
-                // IconButton(
-                //   icon: Icon(Icons.camera),
-                //   onPressed: _captureFrame,
-                // ),
-                IconButton(
-                  icon: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
-                  onPressed: _isRec ? _stopRecording : _startRecording,
-                ),
-                Text(_isRec ? "Stop" : "Start"),
-                PopupMenuButton<String>(
-                  onSelected: _switchCamera,
-                  itemBuilder: (BuildContext context) {
-                    if (_cameras != null) {
-                      return _cameras.map((device) {
-                        return PopupMenuItem<String>(
-                          value: device.deviceId,
-                          child: Text(device.label),
-                        );
-                      }).toList();
-                    } else {
-                      return [];
-                    }
-                  },
-                ),
-                // IconButton(
-                //   icon: Icon(Icons.settings),
-                //   onPressed: _switchCamera,
-                // )
-              ]
-            : null,
+        title: Text('Interview'),
       ),
       body: OrientationBuilder(
         builder: (context, orientation) {
@@ -190,9 +160,9 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _inCalling ? _hangUp : _makeCall,
-        tooltip: _inCalling ? 'Hangup' : 'Call',
-        child: Icon(_inCalling ? Icons.call_end : Icons.phone),
+        onPressed: _isRec ? _stopRecording : _startRecording,
+        tooltip: _isRec ? 'Stop Record' : 'Start Record',
+        child: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
       ),
     );
   }
