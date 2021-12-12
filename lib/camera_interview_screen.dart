@@ -83,15 +83,40 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
     );
   }
 
+  void showAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => SizedBox(
+        width: 200,
+        child: AlertDialog(
+          title: Text('Stay calm, uploading'),
+          content: Row(
+            children: [
+              const CircularProgressIndicator(),
+              SizedBox(
+                width: 20,
+              ),
+              Text(
+                  'We are sending your pitch to the recruiter. This may take some minutes depending on internet speed'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Map _customConfig;
 
   @override
   void didChangeDependencies() {
-    print("----------${widget.mode}-----");
     _customConfig = widget.mode == 'start'
         ? {
             'buttonText': 'START',
-            'welcomeText': ['Hi Mate!', 'Tell us about yourself'],
+            'welcomeText': [
+              'Introduce yourself',
+              'Hi Mate!',
+              'Tell us about yourself'
+            ],
             'infoWidget': _startInterviewWidget(),
             'goto': () => Navigator.push(
                 context,
@@ -102,18 +127,24 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
         : widget.mode == 'upload'
             ? {
                 'buttonText': 'UPLOAD',
-                'welcomeText': ['', 'Your video is ready'],
+                'welcomeText': ['', '', 'Your video is ready'],
                 'infoWidget': _uploadInterviewWidget(),
-                'goto': () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            CameraInterviewScreen(mode: 'done')))
+                'goto': () {
+                  /// MAKE API call to supabse
+                  // Navigator.pushAndRemoveUntil(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //         builder: (context) =>
+                  //             CameraInterviewScreen(mode: 'done')),
+                  //     (route) => false);
+                  Future.delayed(Duration.zero, () => showAlert(context));
+                }
               }
             : widget.mode == 'done'
                 ? {
                     'buttonText': 'DONE',
                     'welcomeText': [
+                      '',
                       '',
                       'Your video has been successfully shared with the recruiter'
                     ],
@@ -138,7 +169,7 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
               children: [
                 Text('Dashhire', style: TextStyle(fontSize: 50)),
                 Text(
-                  'Introduce yourself',
+                  "${_customConfig['welcomeText'][0]}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 )
               ],
@@ -148,12 +179,12 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
             child: Column(
               children: [
                 Text(
-                  "${_customConfig['welcomeText'][0]}",
+                  "${_customConfig['welcomeText'][1]}",
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 25),
                   textAlign: TextAlign.left,
                 ),
                 Text(
-                  "${_customConfig['welcomeText'][1]}",
+                  "${_customConfig['welcomeText'][2]}",
                   textAlign: TextAlign.left,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 )
@@ -177,11 +208,11 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
               child: Row(
                 children: [
                   Icon(
-                    Icons.phone_android_sharp,
+                    Icons.laptop_mac_outlined,
                     size: 60,
                   ),
                   Icon(
-                    Icons.phonelink_erase,
+                    Icons.phone_iphone,
                     size: 60,
                   ),
                   ElevatedButton(
