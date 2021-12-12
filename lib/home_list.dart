@@ -14,7 +14,7 @@ import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
 import './congrates.dart';
 // import 'components/file_upload_card.dart';
-// import 'components/camera_app_card.dart';
+import 'components/camera_app_card.dart';
 // import './utils/supabase_service.dart';
 
 // Avoid namespace conflict with Providers
@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Show File upload card
                       // FileUpload(),
                       // Show video upload card
-                      // CameraAppCard(),
+                      CameraAppCard(),
                       // Show jobs card
                       _getTotalJobs() == 0
                           ? Text('')
