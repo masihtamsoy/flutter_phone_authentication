@@ -1,13 +1,16 @@
 // ignore: uri_does_not_exist
-import 'dart:core';
 import 'dart:html' as html;
+import 'dart:io' as f;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:supabase/supabase.dart' as supa;
+import 'package:video_player/video_player.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../common/constants.dart';
+import './../camera_interview_screen.dart';
 
 /*
  * getUserMedia sample
@@ -113,10 +116,18 @@ class _WebCamState extends State<WebCam> {
     if (_localStream == null) throw Exception('Can\'t record without a stream');
     _mediaRecorder = MediaRecorder();
     setState(() {});
-    _mediaRecorder?.startWeb(_localStream);
+    _mediaRecorder?.startWeb(
+      _localStream,
+      // onDataChunk: (blob, isLastOne) {
+      //   print("--------$blob");
+      // },
+    );
   }
 
   void _stopRecording() async {
+    // print("${_localStream.getVideoTracks()}");
+    // [Track(id: 0eb892a0-df19-4761-b873-5a12a6bfa5a6, kind: video, label: FaceTime HD Camera, enabled: true, muted: false)]
+
     final objectUrl = await _mediaRecorder?.stop();
     setState(() {
       _mediaRecorder = null;
@@ -137,18 +148,46 @@ class _WebCamState extends State<WebCam> {
         .getVideoTracks()
         .firstWhere((track) => track.kind == 'video');
     final frame = await videoTrack.captureFrame();
-    await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              content:
-                  Image.memory(frame.asUint8List(), height: 720, width: 1280),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: Navigator.of(context, rootNavigator: true).pop,
-                  child: Text('OK'),
-                )
-              ],
-            ));
+
+    print("-----frame-------$frame");
+    html.Blob blob = new html.Blob(await frame.asUint8List());
+    print("-----blob-------$blob");
+    print("------videoTrack------ $videoTrack");
+    print("-------videoTrackStrin------ ${videoTrack.toString()}");
+
+    // f.File file = f.File(videoTrack.toString());
+
+    //  _localRenderer.renderVideo;
+
+    final client = supa.SupabaseClient(
+        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+
+    // await client.storage
+    //     .from("interviewvideos")
+    //     .upload(_objectUrl.id, file)
+    //     .then((value) {
+    //   if (value.error == null) {
+    //     print("Value >>>> ${value.data}");
+    //     // final uploadString = value.data;
+    //     // OnboardingOperation.updateOnboarding(
+    //     //     uploadString, 'video', true, context);
+    //   } else {
+    //     print("Error >>>> ${value.error}");
+    //   }
+    // });
+
+    // await showDialog(
+    //     context: context,
+    //     builder: (context) => AlertDialog(
+    //           content:
+    //               Image.memory(frame.asUint8List(), height: 720, width: 1280),
+    //           actions: <Widget>[
+    //             TextButton(
+    //               onPressed: Navigator.of(context, rootNavigator: true).pop,
+    //               child: Text('OK'),
+    //             )
+    //           ],
+    //         ));
   }
 
   @override
@@ -156,6 +195,12 @@ class _WebCamState extends State<WebCam> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Interview'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.camera),
+            onPressed: _captureFrame,
+          ),
+        ],
       ),
       body: OrientationBuilder(
         builder: (context, orientation) {
@@ -200,12 +245,7 @@ class _WebCamState extends State<WebCam> {
                 SizedBox(width: 10),
                 FloatingActionButton(
                   onPressed: () async {
-                    final client = supa.SupabaseClient(
-                        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
-
-                    // await client.storage
-                    //     .from("interviewvideos")
-                    //     .upload(_objectUrl, html.Blob(_objectUrl));
+                    print('---------integration not done---');
                   },
                   tooltip: 'Done',
                   child: Icon(Icons.arrow_forward),

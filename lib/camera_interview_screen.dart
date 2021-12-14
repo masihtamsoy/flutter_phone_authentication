@@ -119,10 +119,7 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
             ],
             'infoWidget': _startInterviewWidget(),
             'goto': () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        CameraInterviewScreen(mode: 'upload')))
+                context, MaterialPageRoute(builder: (context) => WebCam()))
           }
         : widget.mode == 'upload'
             ? {
