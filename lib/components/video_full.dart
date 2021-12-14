@@ -70,6 +70,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   double _currentScale = 1.0;
   bool _processing = false;
   double _baseScale = 1.0;
+  bool _isRec = false;
 
   // Counting pointers (number of user fingers on screen)
   int _pointers = 0;
@@ -108,7 +109,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
   @override
   void dispose() {
-    print("<<<<<<<<<<<<<<<<<<<<<<<<<<Dispose>>>>>>>>>>>>>>>>>>>>>");
     _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
     _flashModeControlRowAnimationController.dispose();
     _exposureModeControlRowAnimationController.dispose();
@@ -138,7 +138,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Interview Cam'),
+        title: const Text(''),
       ),
       body: Column(
         children: <Widget>[
@@ -189,7 +189,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     if (cameraController == null || !cameraController.value.isInitialized) {
       return const Text(
-        'Tap a camera',
+        '',
         style: TextStyle(
           color: Colors.white,
           fontSize: 24.0,
@@ -567,6 +567,17 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         //       ? onTakePictureButtonPressed
         //       : null,
         // ),
+        // IconButton(
+        //     onPressed: cameraController != null &&
+        //             cameraController.value.isInitialized &&
+        //             cameraController.value.isRecordingVideo
+        //         ? onStopButtonPressed
+        //         : onVideoRecordButtonPressed,
+        //     icon: Icon(cameraController != null &&
+        //             cameraController.value.isInitialized &&
+        //             cameraController.value.isRecordingVideo
+        //         ? Icons.stop
+        //         : Icons.fiber_manual_record)),
         IconButton(
           icon: const Icon(Icons.videocam),
           color: Colors.blue,
@@ -576,20 +587,20 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
               ? onVideoRecordButtonPressed
               : null,
         ),
-        IconButton(
-          icon: cameraController != null &&
-                  cameraController.value.isRecordingPaused
-              ? Icon(Icons.play_arrow)
-              : Icon(Icons.pause),
-          color: Colors.blue,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  cameraController.value.isRecordingVideo
-              ? (cameraController.value.isRecordingPaused)
-                  ? onResumeButtonPressed
-                  : onPauseButtonPressed
-              : null,
-        ),
+        // IconButton(
+        //   icon: cameraController != null &&
+        //           cameraController.value.isRecordingPaused
+        //       ? Icon(Icons.play_arrow)
+        //       : Icon(Icons.pause),
+        //   color: Colors.blue,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           cameraController.value.isRecordingVideo
+        //       ? (cameraController.value.isRecordingPaused)
+        //           ? onResumeButtonPressed
+        //           : onPauseButtonPressed
+        //       : null,
+        // ),
         IconButton(
           icon: const Icon(Icons.stop),
           color: Colors.red,
@@ -695,25 +706,27 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     try {
       await cameraController.initialize();
-      await Future.wait([
-        // The exposure mode is currently not supported on the web.
-        ...(!kIsWeb
-            ? [
-                cameraController
-                    .getMinExposureOffset()
-                    .then((value) => _minAvailableExposureOffset = value),
-                cameraController
-                    .getMaxExposureOffset()
-                    .then((value) => _maxAvailableExposureOffset = value)
-              ]
-            : []),
-        cameraController
-            .getMaxZoomLevel()
-            .then((value) => _maxAvailableZoom = value),
-        cameraController
-            .getMinZoomLevel()
-            .then((value) => _minAvailableZoom = value),
-      ]);
+
+      /// camera-web causes error on zoom
+      // await Future.wait([
+      //   // The exposure mode is currently not supported on the web.
+      //   ...(!kIsWeb
+      //       ? [
+      //           cameraController
+      //               .getMinExposureOffset()
+      //               .then((value) => _minAvailableExposureOffset = value),
+      //           cameraController
+      //               .getMaxExposureOffset()
+      //               .then((value) => _maxAvailableExposureOffset = value)
+      //         ]
+      //       : []),
+      //   cameraController
+      //       .getMaxZoomLevel()
+      //       .then((value) => _maxAvailableZoom = value),
+      //   cameraController
+      //       .getMinZoomLevel()
+      //       .then((value) => _minAvailableZoom = value),
+      // ]);
     } on CameraException catch (e) {
       _showCameraException(e);
     }
@@ -815,6 +828,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   void onVideoRecordButtonPressed() {
     startVideoRecording().then((_) {
       if (mounted) setState(() {});
+      setState(() {
+        _isRec = true;
+      });
     });
   }
 
@@ -822,6 +838,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     stopVideoRecording().then((file) {
       if (mounted) setState(() {});
       if (file != null) {
+        setState(() {
+          _isRec = false;
+        });
         showInSnackBar('Video recorded to ${file.path}');
         videoFile = file;
 
@@ -1114,8 +1133,12 @@ Future<List<CameraDescription>> _getCameras() async {
     WidgetsFlutterBinding.ensureInitialized();
     availCameras = await availableCameras();
     print("<<<<<<<<<<>>>>>>>>>> $availCameras");
-    // Show front camera only
-    cameras = [availCameras[0]];
+    if (kIsWeb) {
+      // Show front camera only
+      cameras = [availCameras[0]];
+    } else {
+      cameras = [availCameras[1]];
+    }
 
     return cameras;
   } on CameraException catch (e) {
