@@ -70,7 +70,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   double _currentScale = 1.0;
   bool _processing = false;
   double _baseScale = 1.0;
-  bool _isRec = false;
+  bool _showActionAfterRecording = false;
 
   // Counting pointers (number of user fingers on screen)
   int _pointers = 0;
@@ -175,6 +175,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 ),
                 _uploadWidget(context),
                 _thumbnailWidget(),
+                _showActionAfterRecording
+                    ? _actionAfterRecordingWidget()
+                    : Container(),
               ],
             ),
           ),
@@ -233,7 +236,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   Widget _uploadWidget(context) {
-    print("upload widget >>>>>>>>>>>>>>>>> $_processing");
+    // print("upload widget >>>>>>>>>>>>>>>>> $_processing");
     return ElevatedButton(
       child: Row(
         children: [
@@ -260,6 +263,19 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
           _onFileUpload(context);
         }
       },
+    );
+  }
+
+  Widget _actionAfterRecordingWidget() {
+    return Expanded(
+      child: Align(
+        alignment: Alignment.center,
+        child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+          ElevatedButton(onPressed: () {}, child: Text('Redo')),
+          ElevatedButton(onPressed: () {}, child: Text('Preview')),
+          ElevatedButton(onPressed: () {}, child: Text('Done')),
+        ]),
+      ),
     );
   }
 
@@ -552,11 +568,25 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   /// Display the control bar with buttons to take pictures and record videos.
   Widget _captureControlRowWidget() {
     final CameraController cameraController = controller;
+    bool _isRec = false;
+    _isRec = cameraController != null &&
+            cameraController.value.isInitialized &&
+            cameraController.value.isRecordingVideo
+        ? true
+        : false;
 
+    print('-----isrecording-----$_isRec');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
+        IconButton(
+          icon: Icon(_isRec ? Icons.stop : Icons.videocam),
+          onPressed: () {
+            _isRec ? onStopButtonPressed() : onVideoRecordButtonPressed();
+            // onNewCameraSelected(cameraController.description);
+          },
+        ),
         // // take pics
         // IconButton(
         //   icon: const Icon(Icons.camera_alt),
@@ -578,15 +608,15 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         //             cameraController.value.isRecordingVideo
         //         ? Icons.stop
         //         : Icons.fiber_manual_record)),
-        IconButton(
-          icon: const Icon(Icons.videocam),
-          color: Colors.blue,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  !cameraController.value.isRecordingVideo
-              ? onVideoRecordButtonPressed
-              : null,
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.videocam),
+        //   color: Colors.blue,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           !cameraController.value.isRecordingVideo
+        //       ? onVideoRecordButtonPressed
+        //       : null,
+        // ),
         // IconButton(
         //   icon: cameraController != null &&
         //           cameraController.value.isRecordingPaused
@@ -601,15 +631,15 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         //           : onPauseButtonPressed
         //       : null,
         // ),
-        IconButton(
-          icon: const Icon(Icons.stop),
-          color: Colors.red,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  cameraController.value.isRecordingVideo
-              ? onStopButtonPressed
-              : null,
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.stop),
+        //   color: Colors.red,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           cameraController.value.isRecordingVideo
+        //       ? onStopButtonPressed
+        //       : null,
+        // ),
         // // Pause camera while recording video
         // IconButton(
         //   icon: const Icon(Icons.pause_presentation),
@@ -624,6 +654,43 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     );
   }
 
+  Widget _cameraRecordWidget() {
+    final onChanged = (CameraDescription description) {
+      if (description == null) {
+        return;
+      }
+
+      onNewCameraSelected(description);
+    };
+    if (cameras.isEmpty) {
+      return const Text('No camera found');
+    } else {
+      bool _isRec = false;
+      _isRec = controller != null &&
+              controller.value.isInitialized &&
+              controller.value.isRecordingVideo
+          ? true
+          : false;
+
+      print('----------$controller');
+      // CameraDescription description = controller.description;
+      return SizedBox(
+        width: 90.0,
+        child: IconButton(
+          icon: Icon(_isRec ? Icons.stop : Icons.videocam),
+          onPressed: () {
+            // // onNewCameraSelected(controller.description);
+            // if (_isRec) {
+            //   return null;
+            // } else {}
+            // print('description------- $description');
+            // onNewCameraSelected(description);
+          },
+        ),
+      );
+    }
+  }
+
   /// Display a row of toggle to select the camera (or a message if no camera is available).
   Widget _cameraTogglesRowWidget() {
     final List<Widget> toggles = <Widget>[];
@@ -634,6 +701,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       }
 
       onNewCameraSelected(description);
+      // onVideoRecordButtonPressed();
     };
 
     if (cameras.isEmpty) {
@@ -688,7 +756,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     final CameraController cameraController = CameraController(
       cameraDescription,
-      kIsWeb ? ResolutionPreset.max : ResolutionPreset.medium,
+      kIsWeb ? ResolutionPreset.low : ResolutionPreset.low,
       enableAudio: enableAudio,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -706,6 +774,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     try {
       await cameraController.initialize();
+
+      // onVideoRecordButtonPressed();
 
       /// camera-web causes error on zoom
       // await Future.wait([
@@ -828,9 +898,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   void onVideoRecordButtonPressed() {
     startVideoRecording().then((_) {
       if (mounted) setState(() {});
-      setState(() {
-        _isRec = true;
-      });
     });
   }
 
@@ -839,8 +906,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       if (mounted) setState(() {});
       if (file != null) {
         setState(() {
-          _isRec = false;
+          _showActionAfterRecording = true;
         });
+
         showInSnackBar('Video recorded to ${file.path}');
         videoFile = file;
 
@@ -850,7 +918,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         Provider.of<ExamEvaluateModal>(context, listen: false)
             .video_params(file.name, file.path);
 
-        _startVideoPlayer();
+        /// error: Infinity
+        // _startVideoPlayer();
+
       }
     });
   }
@@ -887,6 +957,10 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   Future<void> startVideoRecording() async {
+    setState(() {
+      _showActionAfterRecording = false;
+    });
+
     final CameraController cameraController = controller;
 
     if (cameraController == null || !cameraController.value.isInitialized) {
