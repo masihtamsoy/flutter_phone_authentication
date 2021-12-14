@@ -1,6 +1,6 @@
 // ignore: uri_does_not_exist
 import 'dart:html' as html;
-import 'dart:io' as f;
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,11 +29,14 @@ class _WebCamState extends State<WebCam> {
   bool _previewReady = false;
   dynamic _objectUrl = '';
   MediaRecorder _mediaRecorder;
+  html.Blob _blob;
 
   List<MediaDeviceInfo> _cameras;
 
   bool get _isRec => _mediaRecorder != null;
   List<dynamic> cameras;
+
+  VideoPlayerController _controller;
 
   @override
   void initState() {
@@ -48,6 +51,13 @@ class _WebCamState extends State<WebCam> {
         cameras = md.where((d) => d.kind == 'videoinput').toList();
       });
     });
+
+    _controller = VideoPlayerController.network(
+        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')
+      ..initialize().then((_) {
+        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+        setState(() {});
+      });
   }
 
   @override
@@ -57,6 +67,13 @@ class _WebCamState extends State<WebCam> {
       _stop();
     }
     _localRenderer.dispose();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _controller.dispose();
   }
 
   void initRenderers() async {
@@ -118,9 +135,16 @@ class _WebCamState extends State<WebCam> {
     setState(() {});
     _mediaRecorder?.startWeb(
       _localStream,
-      // onDataChunk: (blob, isLastOne) {
-      //   print("--------$blob");
-      // },
+      onDataChunk: (blob, isLastOne) {
+        try {
+          setState(() {
+            _blob = blob;
+          });
+        } catch (e) {
+          print('------error----$e');
+        }
+        // print("--------$blob");
+      },
     );
   }
 
@@ -142,25 +166,64 @@ class _WebCamState extends State<WebCam> {
     html.window.open(_objectUrl, '_blank');
   }
 
-  void _captureFrame() async {
-    if (_localStream == null) throw Exception('Can\'t record without a stream');
-    final videoTrack = _localStream
-        .getVideoTracks()
-        .firstWhere((track) => track.kind == 'video');
-    final frame = await videoTrack.captureFrame();
+  // Widget _vid() {
+  //   return Container(
+  //     child: Center(
+  //         child: _controller.value.isInitialized
+  //             ? AspectRatio(
+  //                 aspectRatio: _controller.value.aspectRatio,
+  //                 child: VideoPlayer(_controller),
+  //               )
+  //             : Container(),
+  //       ),
+  //       // floatingActionButton: FloatingActionButton(
+  //       //   onPressed: () {
+  //       //     setState(() {
+  //       //       _controller.value.isPlaying
+  //       //           ? _controller.pause()
+  //       //           : _controller.play();
+  //       //     });
+  //       //   },
+  //       //   child: Icon(
+  //       //     _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+  //       //   ),
+  //       // ),
+  //     );}
 
-    print("-----frame-------$frame");
-    html.Blob blob = new html.Blob(await frame.asUint8List());
-    print("-----blob-------$blob");
-    print("------videoTrack------ $videoTrack");
-    print("-------videoTrackStrin------ ${videoTrack.toString()}");
+  // }
+
+  Widget _captureFrame() {
+    // if (_localStream == null) throw Exception('Can\'t record without a stream');
+    // final videoTrack = _localStream
+    //     .getVideoTracks()
+    //     .firstWhere((track) => track.kind == 'video');
+    // final frame = await videoTrack.captureFrame();
+
+    // print("-----frame-------$frame");
+    // html.Blob blob = new html.Blob(await frame.asUint8List());
+    // print("-----blob-------$blob");
+    // print("------videoTrack------ $videoTrack");
+    // print("-------videoTrackStrin------ ${videoTrack.toString()}");
+    final file = File(_objectUrl);
+
+    return Container(
+        child: Center(
+      child: _controller.value.isInitialized
+          ? AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            )
+          : Container(),
+    ));
+
+    // _localRenderer.srcObject = _localStream;
 
     // f.File file = f.File(videoTrack.toString());
 
     //  _localRenderer.renderVideo;
 
-    final client = supa.SupabaseClient(
-        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+    // final client = supa.SupabaseClient(
+    //     SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
 
     // await client.storage
     //     .from("interviewvideos")
@@ -196,10 +259,11 @@ class _WebCamState extends State<WebCam> {
       appBar: AppBar(
         title: Text('Interview'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.camera),
-            onPressed: _captureFrame,
-          ),
+          _captureFrame()
+          // IconButton(
+          //   icon: Icon(Icons.camera),
+          //   onPressed: _captureFrame,
+          // ),
         ],
       ),
       body: OrientationBuilder(

@@ -37,7 +37,6 @@ dependencies:
   shared_preferences: ^2.0.8
   animated_splash_screen: ^1.1.0
   camera: ^0.9.4+3
-  video_player: ^2.2.6
   flutter_svg: ^0.23.0+1
   supabase: ^0.2.9
   flutter_easyloading: ^3.0.3
@@ -52,6 +51,8 @@ dependencies:
   flutter_mobx: ^2.0.0
   flutter_countdown_timer: ^4.1.0
   flutter_webrtc: ^0.8.0
+  flutter_branch_sdk: ^3.5.0
+  video_player: ^2.2.7
 
 
 dev_dependencies:

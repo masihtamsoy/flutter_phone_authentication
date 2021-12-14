@@ -6,6 +6,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:html' as html;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -206,7 +207,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
               onScaleStart: _handleScaleStart,
-              onScaleUpdate: _handleScaleUpdate,
+              // onScaleUpdate: _handleScaleUpdate,
               onTapDown: (details) => onViewFinderTap(details, constraints),
             );
           }),
@@ -824,6 +825,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         showInSnackBar('Video recorded to ${file.path}');
         videoFile = file;
 
+        // print("--------file----${file.name}---${file.path}");
+
         // On stop set videoFileName and videoFilePath
         Provider.of<ExamEvaluateModal>(context, listen: false)
             .video_params(file.name, file.path);
@@ -1054,7 +1057,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     String videoFilePath =
         Provider.of<ExamEvaluateModal>(context, listen: false).video_file_path;
 
-    final file = File(videoFilePath);
+    dynamic file = await File(videoFilePath);
 
     await client.storage
         .from("interviewvideos")
@@ -1112,7 +1115,7 @@ Future<List<CameraDescription>> _getCameras() async {
     availCameras = await availableCameras();
     print("<<<<<<<<<<>>>>>>>>>> $availCameras");
     // Show front camera only
-    cameras = [availCameras[1]];
+    cameras = [availCameras[0]];
 
     return cameras;
   } on CameraException catch (e) {
