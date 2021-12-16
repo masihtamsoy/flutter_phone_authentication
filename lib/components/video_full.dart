@@ -71,6 +71,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   bool _processing = false;
   double _baseScale = 1.0;
   bool _showActionAfterRecording = false;
+  bool _isRec = false;
 
   // Counting pointers (number of user fingers on screen)
   int _pointers = 0;
@@ -164,28 +165,67 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
               ),
             ),
           ),
-          _captureControlRowWidget(),
+          // _captureControlRowWidget(),
           // INFO: does not work 'isCaptureOrientationLcoked called om null'
           // _modeControlRowWidget(),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                // _cameraTogglesRowWidget(),
-                SizedBox(
-                  width: 25,
-                ),
-                _uploadWidget(context),
-                // _thumbnailWidget(),
-                _showActionAfterRecording
-                    ? _actionAfterRecordingWidget()
-                    : Container(),
-              ],
-            ),
-          ),
+          // Padding(
+          //   // padding: const EdgeInsets.all(5.0),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       // _cameraTogglesRowWidget(),
+          //       // SizedBox(
+          //       //   width: 25,
+          //       // ),
+          //       // _uploadWidget(context),
+          //       // _thumbnailWidget(),
+          //       // _showActionAfterRecording
+          //       //     ? _actionAfterRecordingWidget()
+          //       //     : Container(),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
+      floatingActionButton: !_showActionAfterRecording
+          ? FloatingActionButton(
+              onPressed: () {
+                _isRec ? onStopButtonPressed() : onVideoRecordButtonPressed();
+              },
+              tooltip: _isRec ? 'Stop Record' : 'Start Record',
+              child: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(width: 30),
+                FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      // _previewReady = false;
+                    });
+                  },
+                  tooltip: 'Redo',
+                  child: Icon(Icons.undo),
+                ),
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  onPressed: () {
+                    _openRecordingPreview();
+                  },
+                  tooltip: 'Preview',
+                  child: Icon(Icons.play_arrow),
+                ),
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  onPressed: () async {
+                    print('---------integration not done---');
+                  },
+                  tooltip: 'Done',
+                  child: Icon(Icons.arrow_forward),
+                )
+              ],
+            ),
     );
   }
 
@@ -280,7 +320,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   void showAlert(BuildContext context) {
-    _startVideoPlayer();
+    // _startVideoPlayer();
     final VideoPlayerController localVideoController = videoController;
     print('-----localVideoController-----$localVideoController');
     showDialog(
@@ -632,7 +672,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   /// Display the control bar with buttons to take pictures and record videos.
   Widget _captureControlRowWidget() {
     final CameraController cameraController = controller;
-    bool _isRec = false;
     _isRec = cameraController != null &&
             cameraController.value.isInitialized &&
             cameraController.value.isRecordingVideo
@@ -961,7 +1000,10 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
   void onVideoRecordButtonPressed() {
     startVideoRecording().then((_) {
-      if (mounted) setState(() {});
+      if (mounted)
+        setState(() {
+          _isRec = true;
+        });
     });
   }
 
@@ -971,6 +1013,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       if (file != null) {
         setState(() {
           _showActionAfterRecording = true;
+          _isRec = false;
         });
 
         showInSnackBar('Video recorded to ${file.path}');
