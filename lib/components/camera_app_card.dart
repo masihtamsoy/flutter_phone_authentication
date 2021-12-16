@@ -42,9 +42,11 @@ class _CameraAppCardState extends State<CameraAppCard> {
                         ),
                         color: Theme.of(context).primaryColor,
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  CameraInterviewScreen(mode: 'start')));
+                          Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      CameraInterviewScreen(mode: 'start')),
+                              (route) => false);
                         })),
                 // TextButton(
                 //   child: const Text('START'),

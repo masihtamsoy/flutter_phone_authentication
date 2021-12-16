@@ -33,10 +33,11 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
     dynamic file = await File(videoFilePath);
 
     Future.delayed(Duration(seconds: 10), () {
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-              builder: (context) => CameraInterviewScreen(mode: "done")));
+              builder: (context) => CameraInterviewScreen(mode: "done")),
+          (route) => false);
     });
 
     // await client.storage
@@ -190,8 +191,10 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
                       'Your video has been successfully shared with the recruiter'
                     ],
                     'infoWidget': _doneInterviewWidget(),
-                    'goto': () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()))
+                    'goto': () => Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                        (route) => false)
                   }
                 : {};
 
