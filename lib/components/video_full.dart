@@ -224,7 +224,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 ),
                 SizedBox(width: 10),
                 FloatingActionButton(
-                  onPressed: () async {
+                  onPressed: () {
+                    controller.dispose();
                     Navigator.push(
                         context,
                         MaterialPageRoute(
