@@ -174,7 +174,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                   width: 25,
                 ),
                 _uploadWidget(context),
-                _thumbnailWidget(),
+                // _thumbnailWidget(),
                 _showActionAfterRecording
                     ? _actionAfterRecordingWidget()
                     : Container(),
@@ -266,13 +266,74 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     );
   }
 
+  void _openRecordingPreview() {
+    print(videoFile.path);
+    if (kIsWeb) {
+      // Does not play on new tab, instead it downloads
+      html.window.open(videoFile.path, '_blank');
+    } else {
+      /// TODO: Make a preview video player for mobile
+    }
+  }
+
+  void showAlert(BuildContext context) {
+    _startVideoPlayer();
+    final VideoPlayerController localVideoController = videoController;
+    print('-----localVideoController-----$localVideoController');
+    showDialog(
+      context: context,
+      builder: (context) => SizedBox(
+        width: 200,
+        child: AlertDialog(
+          title: Text('Stay calm, uploading'),
+          content: Row(
+            children: [
+              localVideoController == null && imageFile == null
+                  ? Container()
+                  : SizedBox(
+                      child: (localVideoController == null)
+                          ? (
+                              // The captured image on the web contains a network-accessible URL
+                              // pointing to a location within the browser. It may be displayed
+                              // either with Image.network or Image.memory after loading the image
+                              // bytes to memory.
+                              kIsWeb
+                                  ? Image.network(imageFile.path)
+                                  : Image.file(File(imageFile.path)))
+                          : Container(
+                              child: Center(
+                                child: AspectRatio(
+                                    aspectRatio:
+                                        localVideoController.value.size != null
+                                            ? localVideoController
+                                                .value.aspectRatio
+                                            : 1.0,
+                                    child: VideoPlayer(localVideoController)),
+                              ),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.pink)),
+                            ),
+                      width: 64.0,
+                      height: 64.0,
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _actionAfterRecordingWidget() {
     return Expanded(
       child: Align(
         alignment: Alignment.center,
         child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
           ElevatedButton(onPressed: () {}, child: Text('Redo')),
-          ElevatedButton(onPressed: () {}, child: Text('Preview')),
+          ElevatedButton(
+              onPressed: () {
+                showAlert(context);
+              },
+              child: Text('Preview')),
           ElevatedButton(onPressed: () {}, child: Text('Done')),
         ]),
       ),
@@ -918,9 +979,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         Provider.of<ExamEvaluateModal>(context, listen: false)
             .video_params(file.name, file.path);
 
-        /// error: Infinity
+        /// error: Infinity : preview does now works
         // _startVideoPlayer();
-
       }
     });
   }
