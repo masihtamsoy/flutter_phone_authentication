@@ -79,6 +79,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   void initState() {
     super.initState();
 
+    /// Start off with openning camera on page load
+    onNewCameraSelected(cameras[0]);
+
     _ambiguate(WidgetsBinding.instance)?.addObserver(this);
 
     _flashModeControlRowAnimationController = AnimationController(
@@ -169,7 +172,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                _cameraTogglesRowWidget(),
+                // _cameraTogglesRowWidget(),
                 SizedBox(
                   width: 25,
                 ),
@@ -1248,11 +1251,12 @@ class _CameraAppState extends State<CameraApp> {
           } else {
             if (snapshot.hasError)
               return Center(child: Text('Error: ${snapshot.error}'));
-            else
+            else {
               return SizedBox.expand(
                 child:
                     Container(color: Colors.black, child: CameraHomeScreen()),
               );
+            }
           }
         });
   }
