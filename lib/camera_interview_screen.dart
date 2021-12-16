@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:phone_auth_project/home_list.dart';
 import 'package:phone_auth_project/widgets/button_widget.dart';
 import './widgets/button_widget.dart';
-import './components/web_cam.dart';
+import '../models/eligibility.dart';
+import '../common/constants.dart';
+import './components/video_full.dart';
+import 'package:supabase/supabase.dart' as supa;
+import 'package:provider/provider.dart';
+import 'dart:io';
 
 class CameraInterviewScreen extends StatefulWidget {
   final String mode;
@@ -13,6 +18,42 @@ class CameraInterviewScreen extends StatefulWidget {
 }
 
 class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
+  void _onFileUpload(context) async {
+    final client = supa.SupabaseClient(
+        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+
+    String videoFileName =
+        Provider.of<ExamEvaluateModal>(context, listen: false).video_file_name;
+
+    String videoFilePath =
+        Provider.of<ExamEvaluateModal>(context, listen: false).video_file_path;
+
+    print("----file video upload----$videoFilePath $videoFileName");
+
+    dynamic file = await File(videoFilePath);
+
+    Future.delayed(Duration(seconds: 10), () {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CameraInterviewScreen(mode: "done")));
+    });
+
+    // await client.storage
+    //     .from("interviewvideos")
+    //     .upload(videoFileName, file)
+    //     .then((value) {
+    //   if (value.error == null) {
+    //     print("Value >>>> ${value.data}");
+    //     final uploadString = value.data;
+    //     OnboardingOperation.updateOnboarding(
+    //         uploadString, 'video', true, context);
+    //   } else {
+    //     print("Error >>>> ${value.error}");
+    //   }
+    // });
+  }
+
   Widget _doneInterviewWidget() {
     return Column(
       children: [
@@ -83,7 +124,8 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
     );
   }
 
-  void showAlert(BuildContext context) {
+  void showAlert(BuildContext context) async {
+    await _onFileUpload(context);
     showDialog(
       context: context,
       builder: (context) => SizedBox(
@@ -118,8 +160,10 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
               'Tell us about yourself'
             ],
             'infoWidget': _startInterviewWidget(),
-            'goto': () => Navigator.push(
-                context, MaterialPageRoute(builder: (context) => WebCam()))
+            'goto': () => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => CameraApp()),
+                (route) => false)
           }
         : widget.mode == 'upload'
             ? {

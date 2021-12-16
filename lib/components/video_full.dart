@@ -11,6 +11,7 @@ import 'dart:html' as html;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:phone_auth_project/camera_interview_screen.dart';
 import 'package:video_player/video_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase/supabase.dart' as supa;
@@ -116,6 +117,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
     _flashModeControlRowAnimationController.dispose();
     _exposureModeControlRowAnimationController.dispose();
+    videoController.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -222,7 +225,11 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 SizedBox(width: 10),
                 FloatingActionButton(
                   onPressed: () async {
-                    print('---------integration not done---');
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                CameraInterviewScreen(mode: "upload")));
                   },
                   tooltip: 'Done',
                   child: Icon(Icons.arrow_forward),
@@ -358,43 +365,33 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   Widget _thumbnailWidget() {
     final VideoPlayerController localVideoController = videoController;
 
-    return Expanded(
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            localVideoController == null && imageFile == null
-                ? Container()
-                : SizedBox(
-                    child: (localVideoController == null)
-                        ? (
-                            // The captured image on the web contains a network-accessible URL
-                            // pointing to a location within the browser. It may be displayed
-                            // either with Image.network or Image.memory after loading the image
-                            // bytes to memory.
-                            kIsWeb
-                                ? Image.network(imageFile.path)
-                                : Image.file(File(imageFile.path)))
-                        : Container(
-                            child: Center(
-                              child: AspectRatio(
-                                  aspectRatio:
-                                      localVideoController.value.size != null
-                                          ? localVideoController
-                                              .value.aspectRatio
-                                          : 1.0,
-                                  child: VideoPlayer(localVideoController)),
-                            ),
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.pink)),
-                          ),
-                    width: 270,
-                    height: 270,
-                  ),
-          ],
-        ),
-      ),
+    return Container(
+      child: localVideoController == null && imageFile == null
+          ? Container()
+          : SizedBox(
+              child: (localVideoController == null)
+                  ? (
+                      // The captured image on the web contains a network-accessible URL
+                      // pointing to a location within the browser. It may be displayed
+                      // either with Image.network or Image.memory after loading the image
+                      // bytes to memory.
+                      kIsWeb
+                          ? Image.network(imageFile.path)
+                          : Image.file(File(imageFile.path)))
+                  : Container(
+                      child: Center(
+                        child: AspectRatio(
+                            aspectRatio: localVideoController.value.size != null
+                                ? localVideoController.value.aspectRatio
+                                : 1.0,
+                            child: VideoPlayer(localVideoController)),
+                      ),
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.pink)),
+                    ),
+              width: 270,
+              height: 270,
+            ),
     );
   }
 
@@ -987,7 +984,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
           _isRec = false;
         });
 
-        showInSnackBar('Video recorded to ${file.path}');
+        // showInSnackBar('Video recorded to ${file.path}');
         videoFile = file;
 
         // print("--------file----${file.name}---${file.path}");
