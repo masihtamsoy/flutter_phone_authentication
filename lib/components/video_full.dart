@@ -202,8 +202,11 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 FloatingActionButton(
                   onPressed: () {
                     setState(() {
-                      // _previewReady = false;
+                      _showActionAfterRecording = false;
                     });
+
+                    /// Start camera
+                    onNewCameraSelected(cameras[0]);
                   },
                   tooltip: 'Redo',
                   child: Icon(Icons.undo),
@@ -211,7 +214,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 SizedBox(width: 10),
                 FloatingActionButton(
                   onPressed: () {
-                    _openRecordingPreview();
+                    showAlert(context);
                   },
                   tooltip: 'Preview',
                   child: Icon(Icons.play_arrow),
@@ -319,49 +322,17 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     }
   }
 
-  void showAlert(BuildContext context) {
-    // _startVideoPlayer();
+  void showAlert(BuildContext context) async {
+    await _startVideoPlayer();
     final VideoPlayerController localVideoController = videoController;
-    print('-----localVideoController-----$localVideoController');
     showDialog(
       context: context,
       builder: (context) => SizedBox(
-        width: 200,
+        width: 320,
+        height: 400,
         child: AlertDialog(
-          title: Text('Stay calm, uploading'),
-          content: Row(
-            children: [
-              localVideoController == null && imageFile == null
-                  ? Container()
-                  : SizedBox(
-                      child: (localVideoController == null)
-                          ? (
-                              // The captured image on the web contains a network-accessible URL
-                              // pointing to a location within the browser. It may be displayed
-                              // either with Image.network or Image.memory after loading the image
-                              // bytes to memory.
-                              kIsWeb
-                                  ? Image.network(imageFile.path)
-                                  : Image.file(File(imageFile.path)))
-                          : Container(
-                              child: Center(
-                                child: AspectRatio(
-                                    aspectRatio:
-                                        localVideoController.value.size != null
-                                            ? localVideoController
-                                                .value.aspectRatio
-                                            : 1.0,
-                                    child: VideoPlayer(localVideoController)),
-                              ),
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.pink)),
-                            ),
-                      width: 64.0,
-                      height: 64.0,
-                    ),
-            ],
-          ),
-        ),
+            backgroundColor: Colors.black,
+            content: Center(child: _thumbnailWidget())),
       ),
     );
   }
@@ -418,8 +389,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                             decoration: BoxDecoration(
                                 border: Border.all(color: Colors.pink)),
                           ),
-                    width: 64.0,
-                    height: 64.0,
+                    width: 270,
+                    height: 270,
                   ),
           ],
         ),
@@ -1204,7 +1175,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       }
     };
     vController.addListener(videoPlayerListener);
-    await vController.setLooping(true);
+    await vController.setLooping(false);
     await vController.initialize();
     await videoController?.dispose();
     if (mounted) {
