@@ -6,14 +6,14 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:html' as html;
+// import 'dart:html' as html;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth_project/camera_interview_screen.dart';
 import 'package:video_player/video_player.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:supabase/supabase.dart' as supa;
 import '../common/constants.dart';
 import '../models/eligibility.dart';
@@ -320,15 +320,15 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     );
   }
 
-  void _openRecordingPreview() {
-    print(videoFile.path);
-    if (kIsWeb) {
-      // Does not play on new tab, instead it downloads
-      html.window.open(videoFile.path, '_blank');
-    } else {
-      /// TODO: Make a preview video player for mobile
-    }
-  }
+  // void _openRecordingPreview() {
+  //   print(videoFile.path);
+  //   if (kIsWeb) {
+  //     // Does not play on new tab, instead it downloads
+  //     html.window.open(videoFile.path, '_blank');
+  //   } else {
+  //     /// TODO: Make a preview video player for mobile
+  //   }
+  // }
 
   void showAlert(BuildContext context) async {
     await _startVideoPlayer();
