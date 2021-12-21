@@ -1,11 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 
-import './location/permission_status.dart';
-import './location/service_enabled.dart';
-import './location/get_location.dart';
-
+import '../home_list.dart';
 import './../widgets/button_widget.dart';
 import '../common/constants.dart';
 
@@ -22,6 +21,7 @@ class _LocationCaptureState extends State<LocationCapture> {
   var _permissionGranted;
   bool _serviceEnabled;
   bool _loading = false;
+  bool _recievedLocation = false;
 
   LocationData _location;
   String _error;
@@ -65,8 +65,9 @@ class _LocationCaptureState extends State<LocationCapture> {
       // INFO: update lat and long to table and goto Home page
       OnboardingOperation.updateOnboarding(lat, 'lat', false, context);
 
-      OnboardingOperation.updateOnboarding(long, 'long', true, context);
+      OnboardingOperation.updateOnboarding(long, 'long', false, context);
     } on PlatformException catch (err) {
+      print(err);
       setState(() {
         _error = err.code;
         _loading = false;
@@ -75,20 +76,28 @@ class _LocationCaptureState extends State<LocationCapture> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _requestPermission();
+    _requestService();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    /// This gets run 2 times; can be placed somewhere neater
+    if (_recievedLocation == false &&
+        _permissionGranted == PermissionStatus.granted &&
+        _serviceEnabled) {
+      _getLocation();
+      _recievedLocation = true;
+    }
     return Container(
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          // [@NOTE][@INFO]Figure way to use it as service
-          // PermissionStatusWidget(),
-          // Divider(height: 32),
-          // ServiceEnabledWidget(),
-          // Divider(height: 32),
-          // GetLocationWidget(),
-          // Divider(height: 32),
-
           Container(
             child: Image.network(
               'https://res.cloudinary.com/dmtuysbcn/image/upload/v1637748317/onboarding/location_map_z7kmbv.jpg',
@@ -108,20 +117,26 @@ class _LocationCaptureState extends State<LocationCapture> {
               },
             ),
           ),
-
           Container(
             child: Text(
               "We need location access to show jobs near you",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
             ),
           ),
+          SizedBox(
+            height: 20,
+          ),
           Container(
             child: RoundedButtonWidget(
                 buttonText: 'Continue',
                 onPressed: () {
-                  _requestPermission();
-                  _requestService();
-                  _getLocation();
+                  print(
+                      '---build------${_permissionGranted}---------${_serviceEnabled}');
+
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
+                      (route) => false);
                 }),
           ),
           Text(

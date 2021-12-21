@@ -6,12 +6,14 @@
 
 import 'dart:async';
 import 'dart:io';
+// import 'dart:html' as html;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:phone_auth_project/camera_interview_screen.dart';
 import 'package:video_player/video_player.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:supabase/supabase.dart' as supa;
 import '../common/constants.dart';
 import '../models/eligibility.dart';
@@ -69,6 +71,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   double _currentScale = 1.0;
   bool _processing = false;
   double _baseScale = 1.0;
+  bool _showActionAfterRecording = false;
+  bool _isRec = false;
 
   // Counting pointers (number of user fingers on screen)
   int _pointers = 0;
@@ -76,6 +80,9 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   @override
   void initState() {
     super.initState();
+
+    /// Start off with openning camera on page load
+    onNewCameraSelected(cameras[0]);
 
     _ambiguate(WidgetsBinding.instance)?.addObserver(this);
 
@@ -107,10 +114,11 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
   @override
   void dispose() {
-    print("<<<<<<<<<<<<<<<<<<<<<<<<<<Dispose>>>>>>>>>>>>>>>>>>>>>");
     _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
     _flashModeControlRowAnimationController.dispose();
     _exposureModeControlRowAnimationController.dispose();
+    controller.dispose();
+    videoController.dispose();
     super.dispose();
   }
 
@@ -137,7 +145,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Interview Cam'),
+        title: const Text(''),
       ),
       body: Column(
         children: <Widget>[
@@ -160,25 +168,77 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
               ),
             ),
           ),
-          _captureControlRowWidget(),
+          // _captureControlRowWidget(),
           // INFO: does not work 'isCaptureOrientationLcoked called om null'
           // _modeControlRowWidget(),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                _cameraTogglesRowWidget(),
-                SizedBox(
-                  width: 25,
-                ),
-                _uploadWidget(context),
-                _thumbnailWidget(),
-              ],
-            ),
-          ),
+          // Padding(
+          //   // padding: const EdgeInsets.all(5.0),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       // _cameraTogglesRowWidget(),
+          //       // SizedBox(
+          //       //   width: 25,
+          //       // ),
+          //       // _uploadWidget(context),
+          //       // _thumbnailWidget(),
+          //       // _showActionAfterRecording
+          //       //     ? _actionAfterRecordingWidget()
+          //       //     : Container(),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
+      floatingActionButton: !_showActionAfterRecording
+          ? FloatingActionButton(
+              onPressed: () {
+                _isRec ? onStopButtonPressed() : onVideoRecordButtonPressed();
+              },
+              tooltip: _isRec ? 'Stop Record' : 'Start Record',
+              child: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(width: 30),
+                FloatingActionButton(
+                  heroTag: "redo",
+                  onPressed: () {
+                    setState(() {
+                      _showActionAfterRecording = false;
+                    });
+
+                    /// Start camera
+                    onNewCameraSelected(cameras[0]);
+                  },
+                  tooltip: 'Redo',
+                  child: Icon(Icons.undo),
+                ),
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  heroTag: "preview",
+                  onPressed: () {
+                    showAlert(context);
+                  },
+                  tooltip: 'Preview',
+                  child: Icon(Icons.play_arrow),
+                ),
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  heroTag: "done",
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                CameraInterviewScreen(mode: "upload")));
+                  },
+                  tooltip: 'Done',
+                  child: Icon(Icons.arrow_forward),
+                )
+              ],
+            ),
     );
   }
 
@@ -188,7 +248,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     if (cameraController == null || !cameraController.value.isInitialized) {
       return const Text(
-        'Tap a camera',
+        '',
         style: TextStyle(
           color: Colors.white,
           fontSize: 24.0,
@@ -206,7 +266,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
               onScaleStart: _handleScaleStart,
-              onScaleUpdate: _handleScaleUpdate,
+              // onScaleUpdate: _handleScaleUpdate,
               onTapDown: (details) => onViewFinderTap(details, constraints),
             );
           }),
@@ -232,7 +292,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   Widget _uploadWidget(context) {
-    print("upload widget >>>>>>>>>>>>>>>>> $_processing");
+    // print("upload widget >>>>>>>>>>>>>>>>> $_processing");
     return ElevatedButton(
       child: Row(
         children: [
@@ -262,47 +322,61 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     );
   }
 
+  // void _openRecordingPreview() {
+  //   print(videoFile.path);
+  //   if (kIsWeb) {
+  //     // Does not play on new tab, instead it downloads
+  //     html.window.open(videoFile.path, '_blank');
+  //   } else {
+  //     /// TODO: Make a preview video player for mobile
+  //   }
+  // }
+
+  void showAlert(BuildContext context) async {
+    await _startVideoPlayer();
+    final VideoPlayerController localVideoController = videoController;
+    showDialog(
+      context: context,
+      builder: (context) => SizedBox(
+        width: 320,
+        height: 100,
+        child: AlertDialog(
+            backgroundColor: Colors.black,
+            content: Center(child: _thumbnailWidget())),
+      ),
+    );
+  }
+
   /// Display the thumbnail of the captured image or video.
   Widget _thumbnailWidget() {
     final VideoPlayerController localVideoController = videoController;
 
-    return Expanded(
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            localVideoController == null && imageFile == null
-                ? Container()
-                : SizedBox(
-                    child: (localVideoController == null)
-                        ? (
-                            // The captured image on the web contains a network-accessible URL
-                            // pointing to a location within the browser. It may be displayed
-                            // either with Image.network or Image.memory after loading the image
-                            // bytes to memory.
-                            kIsWeb
-                                ? Image.network(imageFile.path)
-                                : Image.file(File(imageFile.path)))
-                        : Container(
-                            child: Center(
-                              child: AspectRatio(
-                                  aspectRatio:
-                                      localVideoController.value.size != null
-                                          ? localVideoController
-                                              .value.aspectRatio
-                                          : 1.0,
-                                  child: VideoPlayer(localVideoController)),
-                            ),
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.pink)),
-                          ),
-                    width: 64.0,
-                    height: 64.0,
-                  ),
-          ],
-        ),
-      ),
+    return Container(
+      child: localVideoController == null && imageFile == null
+          ? Container()
+          : ConstrainedBox(
+              constraints: const BoxConstraints.expand(),
+              child: (localVideoController == null)
+                  ? (
+                      // The captured image on the web contains a network-accessible URL
+                      // pointing to a location within the browser. It may be displayed
+                      // either with Image.network or Image.memory after loading the image
+                      // bytes to memory.
+                      kIsWeb
+                          ? Image.network(imageFile.path)
+                          : Image.file(File(imageFile.path)))
+                  : Container(
+                      child: Center(
+                        child: AspectRatio(
+                            aspectRatio: localVideoController.value.size != null
+                                ? localVideoController.value.aspectRatio
+                                : 1.0,
+                            child: VideoPlayer(localVideoController)),
+                      ),
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.pink)),
+                    ),
+            ),
     );
   }
 
@@ -551,11 +625,24 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   /// Display the control bar with buttons to take pictures and record videos.
   Widget _captureControlRowWidget() {
     final CameraController cameraController = controller;
+    _isRec = cameraController != null &&
+            cameraController.value.isInitialized &&
+            cameraController.value.isRecordingVideo
+        ? true
+        : false;
 
+    print('-----isrecording-----$_isRec');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
+        IconButton(
+          icon: Icon(_isRec ? Icons.stop : Icons.videocam),
+          onPressed: () {
+            _isRec ? onStopButtonPressed() : onVideoRecordButtonPressed();
+            // onNewCameraSelected(cameraController.description);
+          },
+        ),
         // // take pics
         // IconButton(
         //   icon: const Icon(Icons.camera_alt),
@@ -566,38 +653,49 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         //       ? onTakePictureButtonPressed
         //       : null,
         // ),
-        IconButton(
-          icon: const Icon(Icons.videocam),
-          color: Colors.blue,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  !cameraController.value.isRecordingVideo
-              ? onVideoRecordButtonPressed
-              : null,
-        ),
-        IconButton(
-          icon: cameraController != null &&
-                  cameraController.value.isRecordingPaused
-              ? Icon(Icons.play_arrow)
-              : Icon(Icons.pause),
-          color: Colors.blue,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  cameraController.value.isRecordingVideo
-              ? (cameraController.value.isRecordingPaused)
-                  ? onResumeButtonPressed
-                  : onPauseButtonPressed
-              : null,
-        ),
-        IconButton(
-          icon: const Icon(Icons.stop),
-          color: Colors.red,
-          onPressed: cameraController != null &&
-                  cameraController.value.isInitialized &&
-                  cameraController.value.isRecordingVideo
-              ? onStopButtonPressed
-              : null,
-        ),
+        // IconButton(
+        //     onPressed: cameraController != null &&
+        //             cameraController.value.isInitialized &&
+        //             cameraController.value.isRecordingVideo
+        //         ? onStopButtonPressed
+        //         : onVideoRecordButtonPressed,
+        //     icon: Icon(cameraController != null &&
+        //             cameraController.value.isInitialized &&
+        //             cameraController.value.isRecordingVideo
+        //         ? Icons.stop
+        //         : Icons.fiber_manual_record)),
+        // IconButton(
+        //   icon: const Icon(Icons.videocam),
+        //   color: Colors.blue,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           !cameraController.value.isRecordingVideo
+        //       ? onVideoRecordButtonPressed
+        //       : null,
+        // ),
+        // IconButton(
+        //   icon: cameraController != null &&
+        //           cameraController.value.isRecordingPaused
+        //       ? Icon(Icons.play_arrow)
+        //       : Icon(Icons.pause),
+        //   color: Colors.blue,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           cameraController.value.isRecordingVideo
+        //       ? (cameraController.value.isRecordingPaused)
+        //           ? onResumeButtonPressed
+        //           : onPauseButtonPressed
+        //       : null,
+        // ),
+        // IconButton(
+        //   icon: const Icon(Icons.stop),
+        //   color: Colors.red,
+        //   onPressed: cameraController != null &&
+        //           cameraController.value.isInitialized &&
+        //           cameraController.value.isRecordingVideo
+        //       ? onStopButtonPressed
+        //       : null,
+        // ),
         // // Pause camera while recording video
         // IconButton(
         //   icon: const Icon(Icons.pause_presentation),
@@ -612,6 +710,43 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     );
   }
 
+  Widget _cameraRecordWidget() {
+    final onChanged = (CameraDescription description) {
+      if (description == null) {
+        return;
+      }
+
+      onNewCameraSelected(description);
+    };
+    if (cameras.isEmpty) {
+      return const Text('No camera found');
+    } else {
+      bool _isRec = false;
+      _isRec = controller != null &&
+              controller.value.isInitialized &&
+              controller.value.isRecordingVideo
+          ? true
+          : false;
+
+      print('----------$controller');
+      // CameraDescription description = controller.description;
+      return SizedBox(
+        width: 90.0,
+        child: IconButton(
+          icon: Icon(_isRec ? Icons.stop : Icons.videocam),
+          onPressed: () {
+            // // onNewCameraSelected(controller.description);
+            // if (_isRec) {
+            //   return null;
+            // } else {}
+            // print('description------- $description');
+            // onNewCameraSelected(description);
+          },
+        ),
+      );
+    }
+  }
+
   /// Display a row of toggle to select the camera (or a message if no camera is available).
   Widget _cameraTogglesRowWidget() {
     final List<Widget> toggles = <Widget>[];
@@ -622,6 +757,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       }
 
       onNewCameraSelected(description);
+      // onVideoRecordButtonPressed();
     };
 
     if (cameras.isEmpty) {
@@ -676,7 +812,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     final CameraController cameraController = CameraController(
       cameraDescription,
-      kIsWeb ? ResolutionPreset.max : ResolutionPreset.medium,
+      kIsWeb ? ResolutionPreset.low : ResolutionPreset.low,
       enableAudio: enableAudio,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -694,25 +830,29 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
     try {
       await cameraController.initialize();
-      await Future.wait([
-        // The exposure mode is currently not supported on the web.
-        ...(!kIsWeb
-            ? [
-                cameraController
-                    .getMinExposureOffset()
-                    .then((value) => _minAvailableExposureOffset = value),
-                cameraController
-                    .getMaxExposureOffset()
-                    .then((value) => _maxAvailableExposureOffset = value)
-              ]
-            : []),
-        cameraController
-            .getMaxZoomLevel()
-            .then((value) => _maxAvailableZoom = value),
-        cameraController
-            .getMinZoomLevel()
-            .then((value) => _minAvailableZoom = value),
-      ]);
+
+      // onVideoRecordButtonPressed();
+
+      /// camera-web causes error on zoom
+      // await Future.wait([
+      //   // The exposure mode is currently not supported on the web.
+      //   ...(!kIsWeb
+      //       ? [
+      //           cameraController
+      //               .getMinExposureOffset()
+      //               .then((value) => _minAvailableExposureOffset = value),
+      //           cameraController
+      //               .getMaxExposureOffset()
+      //               .then((value) => _maxAvailableExposureOffset = value)
+      //         ]
+      //       : []),
+      //   cameraController
+      //       .getMaxZoomLevel()
+      //       .then((value) => _maxAvailableZoom = value),
+      //   cameraController
+      //       .getMinZoomLevel()
+      //       .then((value) => _minAvailableZoom = value),
+      // ]);
     } on CameraException catch (e) {
       _showCameraException(e);
     }
@@ -813,7 +953,10 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
 
   void onVideoRecordButtonPressed() {
     startVideoRecording().then((_) {
-      if (mounted) setState(() {});
+      if (mounted)
+        setState(() {
+          _isRec = true;
+        });
     });
   }
 
@@ -821,14 +964,22 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     stopVideoRecording().then((file) {
       if (mounted) setState(() {});
       if (file != null) {
-        showInSnackBar('Video recorded to ${file.path}');
+        setState(() {
+          _showActionAfterRecording = true;
+          _isRec = false;
+        });
+
+        // showInSnackBar('Video recorded to ${file.path}');
         videoFile = file;
+
+        // print("--------file----${file.name}---${file.path}");
 
         // On stop set videoFileName and videoFilePath
         Provider.of<ExamEvaluateModal>(context, listen: false)
             .video_params(file.name, file.path);
 
-        _startVideoPlayer();
+        /// error: Infinity : preview does now works
+        // _startVideoPlayer();
       }
     });
   }
@@ -865,6 +1016,10 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
   }
 
   Future<void> startVideoRecording() async {
+    setState(() {
+      _showActionAfterRecording = false;
+    });
+
     final CameraController cameraController = controller;
 
     if (cameraController == null || !cameraController.value.isInitialized) {
@@ -1002,7 +1157,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       }
     };
     vController.addListener(videoPlayerListener);
-    await vController.setLooping(true);
+    await vController.setLooping(false);
     await vController.initialize();
     await videoController?.dispose();
     if (mounted) {
@@ -1054,7 +1209,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     String videoFilePath =
         Provider.of<ExamEvaluateModal>(context, listen: false).video_file_path;
 
-    final file = File(videoFilePath);
+    dynamic file = await File(videoFilePath);
 
     await client.storage
         .from("interviewvideos")
@@ -1092,11 +1247,12 @@ class _CameraAppState extends State<CameraApp> {
           } else {
             if (snapshot.hasError)
               return Center(child: Text('Error: ${snapshot.error}'));
-            else
+            else {
               return SizedBox.expand(
                 child:
                     Container(color: Colors.black, child: CameraHomeScreen()),
               );
+            }
           }
         });
   }
@@ -1111,8 +1267,12 @@ Future<List<CameraDescription>> _getCameras() async {
     WidgetsFlutterBinding.ensureInitialized();
     availCameras = await availableCameras();
     print("<<<<<<<<<<>>>>>>>>>> $availCameras");
-    // Show front camera only
-    cameras = [availCameras[1]];
+    if (kIsWeb) {
+      // Show front camera only
+      cameras = [availCameras[0]];
+    } else {
+      cameras = [availCameras[1]];
+    }
 
     return cameras;
   } on CameraException catch (e) {

@@ -6,9 +6,17 @@ import './home_list.dart';
 import './utils/supabase_service.dart';
 import './widgets/button_widget.dart';
 
-class Congrates extends StatelessWidget {
+class Congrates extends StatefulWidget {
+  final bool isTimeouted;
+  Congrates({Key key, this.isTimeouted = false}) : super(key: key);
+
+  @override
+  State<Congrates> createState() => _CongratesState();
+}
+
+class _CongratesState extends State<Congrates> {
   bool _isInitialized;
-//Remark Logic
+
   String resultPhrase(int resultScore) {
     String resultText;
     if (resultScore >= 41) {
@@ -69,10 +77,31 @@ class Congrates extends StatelessWidget {
     }
   }
 
+  void showAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Timeout'),
+        content: Text('Your time is over, answers submitted'),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () => {Navigator.of(context).pop(false)},
+            child: Text('CONTINUE'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (this._isInitialized == null || !this._isInitialized) {
+      // Submit application to DB
       submitApplication(context);
+      // /// show alertDialog to notify user
+      if (widget.isTimeouted) {
+        Future.delayed(Duration.zero, () => showAlert(context));
+      }
       this._isInitialized = true;
     }
 

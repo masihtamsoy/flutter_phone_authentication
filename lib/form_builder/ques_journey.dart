@@ -15,12 +15,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_countdown_timer/index.dart';
 
 import './json_schema.dart';
 import '../congrates.dart';
 
 import './../models/eligibility.dart';
 import './../utils/supabase_service.dart';
+import './../widgets/countdown_timer_widget.dart';
 
 // QuestionJourney extends Journey
 // In future there can be other journeys that can be extracted from Journey class
@@ -92,10 +94,45 @@ class _QuestionJourneyState extends State<QuestionJourney> {
     return journey;
   }
 
+  Future<bool> _showDialog() {
+    return showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Are you sure?'),
+            content: Text('Do you want to exit an App'),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () => {
+                  /// submit application is done on COngrates page
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => Congrates()),
+                      (route) => false)
+                },
+                child: Text('SUBMIT TEST'),
+              ),
+              FlatButton(
+                onPressed: () => {Navigator.of(context).pop(false)},
+                child: Text('CONTINUE'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<bool> _onWillPop() {
+    return _showDialog();
+  }
+
   @override
   Widget build(BuildContext context) {
     String company_name = Provider.of<ExamEvaluateModal>(context, listen: false)
         .job_selected['company_name'];
+
+    CountdownController countdownController =
+        Provider.of<ExamEvaluateModal>(context, listen: false)
+            .countdownController;
 
     return FutureBuilder(
         future: getJobRelationQuestion(), // function where you call your api
@@ -106,59 +143,80 @@ class _QuestionJourneyState extends State<QuestionJourney> {
             if (snapshot.hasError)
               return Center(child: Text('Error: ${snapshot.error}'));
             else
-              return new Scaffold(
-                  resizeToAvoidBottomInset: false,
-                  appBar: new AppBar(
-                    title: new Text("Test"),
-                    automaticallyImplyLeading: true,
-                  ),
-                  body: SingleChildScrollView(
-                    child: new Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Container(
-                            color: Theme.of(context).secondaryHeaderColor,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("$company_name"),
-                                Text(
-                                    "${widget.screenIndex + 1} / ${_getScreenCount()}")
-                              ],
-                            ),
+              return WillPopScope(
+                onWillPop: _onWillPop,
+                child: new Scaffold(
+                    resizeToAvoidBottomInset: false,
+                    appBar: new AppBar(
+                      title: new Text("Test"),
+                      automaticallyImplyLeading: true,
+                      actions: [
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+
+                            /// show countdown for test
+                            child: Countdown(
+                                countdownController: countdownController,
+                                builder: (_, Duration time) {
+                                  return Text(
+                                      '${time.inMinutes % 60} : ${time.inSeconds % 60}',
+                                      style: TextStyle(fontSize: 20));
+                                }),
                           ),
-                          JsonSchema(
-                              // INFO: response here is context
-                              onSubmitSave: (dynamic response, _formKey) {
-                                print("response $response");
+                        )
+                      ],
+                    ),
+                    body: SingleChildScrollView(
+                      child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(
+                              color: Theme.of(context).secondaryHeaderColor,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("$company_name"),
+                                  Text(
+                                      "${widget.screenIndex + 1} / ${_getScreenCount()}")
+                                ],
+                              ),
+                            ),
+                            JsonSchema(
+                                // INFO: response here is context
+                                onSubmitSave: (dynamic response, _formKey) {
+                                  print("response $response");
 
-                                // INFO: on question submit update marks attained by user
-                                // response.read<ExamEvaluateModal>().assignMark();
+                                  // INFO: on question submit update marks attained by user
+                                  // response.read<ExamEvaluateModal>().assignMark();
 
-                                // INFO: use screenIndex to pull out json object from screens json passed
-                                // TODO: This condition should be tight
-                                // When screenIndex == _getScreenCount() index error occur
+                                  // INFO: use screenIndex to pull out json object from screens json passed
+                                  // TODO: This condition should be tight
+                                  // When screenIndex == _getScreenCount() index error occur
 
-                                if (widget.screenIndex ==
-                                    _getScreenCount() - 1) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              new Congrates()));
-                                } else {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              new QuestionJourney(
-                                                  screenIndex:
-                                                      widget.screenIndex + 1)));
-                                }
-                              },
-                              form: _getFormScreen()),
-                        ]),
-                  ));
+                                  if (widget.screenIndex ==
+                                      _getScreenCount() - 1) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                new Congrates()));
+                                  } else {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                new QuestionJourney(
+                                                    screenIndex:
+                                                        widget.screenIndex +
+                                                            1)));
+                                  }
+                                },
+                                form: _getFormScreen()),
+                          ]),
+                    )),
+              );
           }
         });
   }

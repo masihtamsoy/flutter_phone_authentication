@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_countdown_timer/index.dart';
 
 //INFO: Basic Modal with getter and setter functions
 class ExamEvaluateModal with ChangeNotifier {
@@ -37,6 +38,14 @@ class ExamEvaluateModal with ChangeNotifier {
   String get video_file_name => _video_file_name;
 
   String get video_file_path => _video_file_path;
+
+  CountdownController get countdownController => _countdownController;
+
+  CountdownController _countdownController;
+
+  void countdownController_select(CountdownController countdownCtr) {
+    _countdownController = countdownCtr;
+  }
 
   void video_params(fileName, filePath) {
     _video_file_name = fileName;

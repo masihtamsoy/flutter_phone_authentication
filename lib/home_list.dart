@@ -7,11 +7,13 @@ import 'package:phone_auth_project/login.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
+import 'package:flutter_countdown_timer/index.dart';
 
 import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
-import 'components/file_upload_card.dart';
+import './congrates.dart';
+// import 'components/file_upload_card.dart';
 import 'components/camera_app_card.dart';
 // import './utils/supabase_service.dart';
 
@@ -57,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final selectResponse = await client.rpc('get_job_list', params: {
       'company_code_param': companyCode,
-      'mobile_number_param': mobile
+      'mobile_number_param': mobile,
     }).execute();
 
     data = json.encode({});
@@ -128,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       // Show File upload card
-                      FileUpload(),
+                      // FileUpload(),
                       // Show video upload card
                       CameraAppCard(),
                       // Show jobs card
@@ -209,30 +211,71 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 "Test comprises of MCQ and aptitude",
                                                 style: TextStyle(fontSize: 10),
                                               ),
-                                              MaterialButton(
-                                                color: Theme.of(context)
-                                                    .primaryColor,
-                                                onPressed: () {
-                                                  // maintain state: job_selected
-                                                  Provider.of<ExamEvaluateModal>(
-                                                          context,
-                                                          listen: false)
-                                                      .job_select(
-                                                          _getJob(index));
+                                              ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints
+                                                            .tightFor(
+                                                        width: 110, height: 40),
+                                                child: MaterialButton(
+                                                  color: Theme.of(context)
+                                                      .primaryColor,
+                                                  onPressed: () {
+                                                    // maintain state: job_selected
+                                                    Provider.of<ExamEvaluateModal>(
+                                                            context,
+                                                            listen: false)
+                                                        .job_select(
+                                                            _getJob(index));
 
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            new QuestionJourney(
-                                                                screenIndex:
-                                                                    0)),
-                                                  );
-                                                },
-                                                child: const Text(
-                                                  'Start Test',
-                                                  style: TextStyle(
-                                                      color: Colors.white),
+                                                    /// Start counter global
+                                                    // initiate CountdownTimer-------
+                                                    CountdownController
+                                                        countdownController =
+                                                        CountdownController(
+                                                            duration: Duration(
+                                                                // seconds: 10,
+                                                                minutes: 10),
+                                                            onEnd: () {
+                                                              /// open dialog box: with 'continue'
+                                                              /// msg: Your time to complete test has expired. Your application has been submitted!
+                                                              /// goto congrates page
+                                                              print(
+                                                                  '-----onEnd---- counter---minutes--');
+
+                                                              Navigator.pushAndRemoveUntil(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                      builder: (context) => Congrates(
+                                                                          isTimeouted:
+                                                                              true)),
+                                                                  (route) =>
+                                                                      false);
+                                                            });
+
+                                                    countdownController.start();
+
+                                                    Provider.of<ExamEvaluateModal>(
+                                                            context,
+                                                            listen: false)
+                                                        .countdownController_select(
+                                                            countdownController);
+
+                                                    //-----------------------------
+
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              new QuestionJourney(
+                                                                  screenIndex:
+                                                                      0)),
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    'Start Test'.toUpperCase(),
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
                                                 ),
                                               ),
                                             ],

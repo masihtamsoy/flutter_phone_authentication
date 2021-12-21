@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.4+5
+version: 1.0.5+6
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -37,13 +37,21 @@ dependencies:
   shared_preferences: ^2.0.8
   animated_splash_screen: ^1.1.0
   camera: ^0.9.4+3
-  video_player: ^2.2.6
   flutter_svg: ^0.23.0+1
   supabase: ^0.2.9
   flutter_easyloading: ^3.0.3
   timer_button: ^2.0.0
   file_picker: ^4.2.3
   location: ^4.3.0
+  dash_widget:
+    git:
+      url: https://github.com/masihtamsoy/dash_widget.git
+      ref: stable
+  mobx: ^2.0.0
+  flutter_mobx: ^2.0.0
+  flutter_countdown_timer: ^4.1.0
+  flutter_branch_sdk: ^3.5.0
+  video_player: ^2.2.7
 
 
 dev_dependencies:

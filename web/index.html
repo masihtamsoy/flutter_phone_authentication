@@ -26,13 +26,47 @@
   <meta name="apple-mobile-web-app-title" content="flutter_phone_authentication">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <title>flutter_phone_authentication</title>
+  <title>Dashhire</title>
+  <script>
+    // load Branch
+    (function(b,r,a,n,c,h,_,s,d,k){if(!b[n]||!b[n]._q){for(;s<_.length;)c(h,_[s++]);d=r.createElement(a);d.async=1;d.src="https://cdn.branch.io/branch-latest.min.js";k=r.getElementsByTagName(a)[0];k.parentNode.insertBefore(d,k);b[n]=h}})(window,document,"script","branch",function(b,r){b[r]=function(){b._q.push([r,arguments])}},{_q:[],_v:1},"addListener applyCode autoAppIndex banner closeBanner closeJourney creditHistory credits data deepview deepviewCta first getCode init link logout redeem referrals removeListener sendSMS setBranchViewData setIdentity track validateCode trackCommerceEvent logEvent disableTracking".split(" "), 0);
+    // init Branch
+    branch.init('key_live_bmXx2yiEAQhmoAfJ3T9LbhcoCEiXdoFc');
+  </script>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    // import { initializeApp } from "https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js";
+    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7GlAAMOY7o5oXm2Hx9yYSnAaA9rC3yAE",
+      authDomain: "pragti.firebaseapp.com",
+      databaseURL: "https://pragti.firebaseio.com",
+      projectId: "pragti",
+      storageBucket: "pragti.appspot.com",
+      messagingSenderId: "521852175920",
+      appId: "1:521852175920:web:fe5ac268972a95fd240ff5",
+      measurementId: "G-RB53G8EGJQ"
+    };
+  
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
+  
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;

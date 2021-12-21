@@ -1,14 +1,18 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth_project/home_list.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:timer_button/timer_button.dart';
+import 'package:timer_button/timer_button.dart';
 import 'package:provider/provider.dart';
 
 import './../models/eligibility.dart';
 import './company_code.dart';
 import './utils/supabase_service.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class OTPScreen extends StatefulWidget {
   final String phone;
@@ -20,6 +24,8 @@ class OTPScreen extends StatefulWidget {
 class _OTPScreenState extends State<OTPScreen> {
   // User related
   String uid;
+  ConfirmationResult webConfirmationResult;
+
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   final GlobalKey<ScaffoldState> _scaffoldkey = GlobalKey<ScaffoldState>();
@@ -38,74 +44,91 @@ class _OTPScreenState extends State<OTPScreen> {
     return Scaffold(
       key: _scaffoldkey,
       appBar: AppBar(),
-      body: Column(
-        children: [
-          Container(
-            margin: EdgeInsets.only(top: 40),
-            child: Center(
-              child: Text(
-                'OTP sent to +91-${widget.phone}',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+      body: Container(
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: 380,
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 40),
+                child: Center(
+                  child: Text(
+                    'OTP sent to +91-${widget.phone}',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(30.0),
-            child: PinPut(
-              fieldsCount: 6,
-              textStyle: const TextStyle(fontSize: 25.0, color: Colors.white),
-              eachFieldWidth: 40.0,
-              eachFieldHeight: 55.0,
-              focusNode: _pinPutFocusNode,
-              controller: _pinPutController,
-              submittedFieldDecoration: pinPutDecoration,
-              selectedFieldDecoration: pinPutDecoration,
-              followingFieldDecoration: pinPutDecoration,
-              pinAnimationType: PinAnimationType.fade,
-              onSubmit: (pin) async {
-                try {
-                  await FirebaseAuth.instance
-                      .signInWithCredential(PhoneAuthProvider.credential(
-                          verificationId: _verificationCode, smsCode: pin))
-                      .then((value) async {
-                    if (value.user != null) {
-                      _actionOnUserPresent(context);
-                    }
-                  });
-                } catch (e) {
-                  FocusScope.of(context).unfocus();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('invalid OTP')));
+              Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: PinPut(
+                  fieldsCount: 6,
+                  textStyle:
+                      const TextStyle(fontSize: 25.0, color: Colors.white),
+                  eachFieldWidth: 40.0,
+                  eachFieldHeight: 55.0,
+                  focusNode: _pinPutFocusNode,
+                  controller: _pinPutController,
+                  submittedFieldDecoration: pinPutDecoration,
+                  selectedFieldDecoration: pinPutDecoration,
+                  followingFieldDecoration: pinPutDecoration,
+                  pinAnimationType: PinAnimationType.fade,
+                  onSubmit: (pin) async {
+                    print("PIN--------------$pin---------");
+                    if (kIsWeb) {
+                      _confirmCodeWeb(pin);
+                    } else {
+                      try {
+                        await FirebaseAuth.instance
+                            .signInWithCredential(PhoneAuthProvider.credential(
+                                verificationId: _verificationCode,
+                                smsCode: pin))
+                            .then((value) async {
+                          if (value.user != null) {
+                            _actionOnUserPresent(context);
+                          }
+                        });
+                      } catch (e) {
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('invalid OTP')));
 
-                  // depricated
-                  // _scaffoldkey.currentState
-                  //     .showSnackBar(SnackBar(content: Text('invalid OTP')));
-                }
-              },
-            ),
+                        // depricated
+                        // _scaffoldkey.currentState
+                        //     .showSnackBar(SnackBar(content: Text('invalid OTP')));
+                      }
+                    }
+                  },
+                ),
+              ),
+              SizedBox(
+                height: 60,
+              ),
+              new TimerButton(
+                label: "Resend OTP",
+                timeOutInSeconds: 50,
+                onPressed: () {
+                  if (kIsWeb) {
+                    _verifyWebPhoneNumber();
+                  } else {
+                    _verifyPhone();
+                  }
+                },
+                disabledColor: Colors.grey,
+                color: Colors.deepPurple[400],
+                buttonType: ButtonType.OutlinedButton,
+                disabledTextStyle: new TextStyle(fontSize: 10.0),
+                activeTextStyle: new TextStyle(
+                    fontSize: 10.0, color: Colors.deepPurpleAccent),
+              ),
+              // TextButton(
+              //     onPressed: () {
+              //       _verifyPhone();
+              //     },
+              //     child: Text('Resend otp'))
+            ],
           ),
-          SizedBox(
-            height: 60,
-          ),
-          // new TimerButton(
-          //   label: "Resend OTP",
-          //   timeOutInSeconds: 50,
-          //   onPressed: () {
-          //     _verifyPhone();
-          //   },
-          //   disabledColor: Colors.grey,
-          //   color: Colors.deepPurple[400],
-          //   buttonType: ButtonType.OutlinedButton,
-          //   disabledTextStyle: new TextStyle(fontSize: 10.0),
-          //   activeTextStyle:
-          //       new TextStyle(fontSize: 10.0, color: Colors.deepPurpleAccent),
-          // )
-          // TextButton(
-          //     onPressed: () {
-          //       _verifyPhone();
-          //     },
-          //     child: Text('Resend otp'))
-        ],
+        ),
       ),
     );
   }
@@ -128,6 +151,32 @@ class _OTPScreenState extends State<OTPScreen> {
         context,
         MaterialPageRoute(builder: (context) => CompanyCodeScreen()),
         (route) => false);
+  }
+
+  Future<void> _confirmCodeWeb(String pin) async {
+    if (webConfirmationResult != null) {
+      try {
+        await webConfirmationResult.confirm(pin).then((value) async {
+          if (value.user != null) {
+            _actionOnUserPresent(context);
+          }
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to sign in: ${e.toString()}')));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Please input sms code received after verifying phone number')));
+    }
+  }
+
+  Future<void> _verifyWebPhoneNumber() async {
+    ConfirmationResult confirmationResult =
+        await _auth.signInWithPhoneNumber('+91${widget.phone}');
+
+    webConfirmationResult = confirmationResult;
   }
 
   _verifyPhone() async {
@@ -162,6 +211,10 @@ class _OTPScreenState extends State<OTPScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _verifyPhone();
+    if (kIsWeb) {
+      _verifyWebPhoneNumber();
+    } else {
+      _verifyPhone();
+    }
   }
 }

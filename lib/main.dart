@@ -1,24 +1,23 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:phone_auth_project/congrates.dart';
 import 'package:phone_auth_project/form_builder/onboard_form.dart';
-import 'package:phone_auth_project/hello.dart';
 
 import 'package:phone_auth_project/home_list.dart';
+import 'package:phone_auth_project/home.dart';
 import 'package:phone_auth_project/login.dart';
 import 'package:provider/provider.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dash_widget/dash_widget.dart';
+import 'package:dash_widget/store/jobs_store.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+
 import './common/theme.dart';
 import './models/eligibility.dart';
-import 'hello.dart';
-import 'calendar.dart';
 
 import './company_code.dart';
-import 'components/file_upload_card.dart';
-import './components/video_full.dart';
 // import './models/shared_preferences.dart';
 // import './models/user.dart';
 
@@ -31,7 +30,7 @@ import './components/video_full.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp();
+  await Firebase.initializeApp();
   runApp(
     ChangeNotifierProvider(
       create: (context) => ExamEvaluateModal(),
@@ -41,6 +40,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  final JobsStore _jobsStore = JobsStore();
   Future<String> userId;
   bool isLoggedIn;
   String mobile;
@@ -76,24 +76,33 @@ class MyApp extends StatelessWidget {
               firstWidget = LoginScreen();
             }
 
-            return MaterialApp(
-              title: 'Dashhire',
-              theme: appTheme,
-              home: AnimatedSplashScreen(
-                  duration: 1000,
-                  splash: Text(
-                    "Dashhire",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 35,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  nextScreen: firstWidget,
-                  splashTransition: SplashTransition.fadeTransition,
-                  backgroundColor: Colors.deepPurpleAccent),
-              // home: Congrates(),
-              debugShowCheckedModeBanner: false,
-              builder: EasyLoading.init(),
+            return MultiProvider(
+              providers: [
+                Provider<JobsStore>(create: (_) => _jobsStore),
+              ],
+              child: Observer(
+                  name: 'global-observer',
+                  builder: (context) {
+                    return MaterialApp(
+                      title: 'Dashhire',
+                      theme: appTheme,
+                      home: AnimatedSplashScreen(
+                          duration: 1000,
+                          splash: Text(
+                            "Dashhire",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 35,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          nextScreen: firstWidget,
+                          splashTransition: SplashTransition.fadeTransition,
+                          backgroundColor: Colors.deepPurpleAccent),
+                      // home: Congrates(),
+                      debugShowCheckedModeBanner: false,
+                      builder: EasyLoading.init(),
+                    );
+                  }),
             );
           }
         });
