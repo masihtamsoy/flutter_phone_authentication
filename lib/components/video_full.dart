@@ -337,7 +337,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
       context: context,
       builder: (context) => SizedBox(
         width: 320,
-        height: 400,
+        height: 100,
         child: AlertDialog(
             backgroundColor: Colors.black,
             content: Center(child: _thumbnailWidget())),
@@ -369,7 +369,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     return Container(
       child: localVideoController == null && imageFile == null
           ? Container()
-          : SizedBox(
+          : ConstrainedBox(
+              constraints: const BoxConstraints.expand(),
               child: (localVideoController == null)
                   ? (
                       // The captured image on the web contains a network-accessible URL
@@ -390,8 +391,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                       decoration:
                           BoxDecoration(border: Border.all(color: Colors.pink)),
                     ),
-              width: 270,
-              height: 270,
             ),
     );
   }
