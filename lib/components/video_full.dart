@@ -117,8 +117,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
     _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
     _flashModeControlRowAnimationController.dispose();
     _exposureModeControlRowAnimationController.dispose();
-    videoController.dispose();
     controller.dispose();
+    videoController.dispose();
     super.dispose();
   }
 
@@ -203,6 +203,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
               children: [
                 SizedBox(width: 30),
                 FloatingActionButton(
+                  heroTag: "redo",
                   onPressed: () {
                     setState(() {
                       _showActionAfterRecording = false;
@@ -216,6 +217,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 ),
                 SizedBox(width: 10),
                 FloatingActionButton(
+                  heroTag: "preview",
                   onPressed: () {
                     showAlert(context);
                   },
@@ -224,8 +226,8 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
                 ),
                 SizedBox(width: 10),
                 FloatingActionButton(
+                  heroTag: "done",
                   onPressed: () {
-                    controller.dispose();
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -341,23 +343,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
         child: AlertDialog(
             backgroundColor: Colors.black,
             content: Center(child: _thumbnailWidget())),
-      ),
-    );
-  }
-
-  Widget _actionAfterRecordingWidget() {
-    return Expanded(
-      child: Align(
-        alignment: Alignment.center,
-        child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-          ElevatedButton(onPressed: () {}, child: Text('Redo')),
-          ElevatedButton(
-              onPressed: () {
-                showAlert(context);
-              },
-              child: Text('Preview')),
-          ElevatedButton(onPressed: () {}, child: Text('Done')),
-        ]),
       ),
     );
   }
