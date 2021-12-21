@@ -161,7 +161,7 @@ class _QuestionJourneyState extends State<QuestionJourney> {
                                 builder: (_, Duration time) {
                                   return Text(
                                       '${time.inMinutes % 60} : ${time.inSeconds % 60}',
-                                      style: TextStyle(fontSize: 18));
+                                      style: TextStyle(fontSize: 20));
                                 }),
                           ),
                         )

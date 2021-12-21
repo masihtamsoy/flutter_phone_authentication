@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 constraints:
                                                     const BoxConstraints
                                                             .tightFor(
-                                                        width: 100, height: 40),
+                                                        width: 110, height: 40),
                                                 child: MaterialButton(
                                                   color: Theme.of(context)
                                                       .primaryColor,
