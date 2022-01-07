@@ -32,7 +32,14 @@ class _OnboardingScreen extends State<OnboardingScreen> {
         'name': 'location',
         'type': 'Dropdown',
         'labelText': "Select Location",
-        'options': ['Bengaluru', 'Delhi', 'Mumbai', 'Chennai', 'Kolkata'],
+        'options': [
+          'Bengaluru',
+          'Delhi',
+          'Mumbai',
+          'Chennai',
+          'Kolkata',
+          'Hyderabad'
+        ],
         "validation": {
           "required": true,
         },

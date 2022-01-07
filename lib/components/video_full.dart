@@ -190,8 +190,10 @@ class _CameraHomeScreenState extends State<CameraHomeScreen>
           // ),
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: !_showActionAfterRecording
           ? FloatingActionButton(
+              heroTag: "rec",
               onPressed: () {
                 _isRec ? onStopButtonPressed() : onVideoRecordButtonPressed();
               },

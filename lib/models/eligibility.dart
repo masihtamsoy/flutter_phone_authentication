@@ -98,8 +98,13 @@ class ExamEvaluateModal with ChangeNotifier {
 
   // INFO: sum marks wrt to field name
   void markScored() {
-    var values = _question_answer_mark.values;
-    _mark_scored = values.reduce((sum, element) => sum + element);
+    try {
+      var values = _question_answer_mark.values;
+      _mark_scored = values.reduce((sum, element) => sum + element);
+    } catch (e) {
+      _mark_scored = 0;
+      print(e);
+    }
 
     // notifyListeners();
   }
