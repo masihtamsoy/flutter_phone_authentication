@@ -125,6 +125,7 @@ class _MyAppState extends State<MyApp> {
       FirebaseMessaging.instance.getToken().then(print);
     } catch (e) {}
 
+    /// Terminated state
     FirebaseMessaging.instance
         .getInitialMessage()
         .then((RemoteMessage message) {
@@ -137,12 +138,7 @@ class _MyAppState extends State<MyApp> {
       }
     });
 
-    // FirebaseMessaging.onMessage.listen((message) {
-    //   if (message.notification != null) {
-    //     print(message.notification.body);
-    //     print(message.notification.title);
-    //   }
-    // });
+    /// Forground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification notification = message.notification;
       AndroidNotification android = message.notification?.android;
