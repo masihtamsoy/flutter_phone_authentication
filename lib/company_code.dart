@@ -73,10 +73,7 @@ class _CompanyCodeScreenState extends State<CompanyCodeScreen> {
                               builder: (context) => OnboardingScreen()),
                           (route) => false);
                     } else {
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                          (route) => false);
+                      Navigator.pushNamed(context, '/home');
                     }
                   },
                   form: form),

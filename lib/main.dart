@@ -59,9 +59,6 @@ class _MyAppState extends State<MyApp> {
   String mobile;
 
   Future<void> _userLoggedIn() async {
-    String token = await FirebaseMessaging.instance.getToken();
-    print('--------TOKEN-------- $token');
-
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     isLoggedIn = (prefs.getBool('isLoggedIn') == null)
         ? false
@@ -81,6 +78,8 @@ class _MyAppState extends State<MyApp> {
         print(message.notification.title);
       }
     });
+
+    // FirebaseMessaging.instance.getToken().then((value) => print(value));
   }
 
   @override
@@ -115,8 +114,12 @@ class _MyAppState extends State<MyApp> {
                     return MaterialApp(
                       title: 'Dashhire',
                       theme: appTheme,
+
+                      routes: {
+                        '/home': (context) => HomeScreen(),
+                      },
                       home: AnimatedSplashScreen(
-                          duration: 1000,
+                          duration: 800,
                           splash: Text(
                             "Dashhire",
                             style: TextStyle(
