@@ -42,6 +42,8 @@ void main() async {
       child: MyApp(),
     ),
   );
+
+  // await FirebaseMessaging.instance.getToken().then(print);
 }
 
 class MyApp extends StatefulWidget {
@@ -71,6 +73,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     FirebaseMessaging.instance.getInitialMessage();
+    try {
+      // Does not work with emulators
+      FirebaseMessaging.instance.getToken().then(print);
+    } catch (e) {}
 
     FirebaseMessaging.onMessage.listen((message) {
       if (message.notification != null) {
@@ -78,8 +84,6 @@ class _MyAppState extends State<MyApp> {
         print(message.notification.title);
       }
     });
-
-    // FirebaseMessaging.instance.getToken().then((value) => print(value));
   }
 
   @override
