@@ -1,4 +1,9 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:phone_auth_project/form_builder/onboard_form.dart';
@@ -39,19 +44,43 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final JobsStore _jobsStore = JobsStore();
+
   Future<String> userId;
+
   bool isLoggedIn;
+
   String mobile;
 
   Future<void> _userLoggedIn() async {
+    String token = await FirebaseMessaging.instance.getToken();
+    print('--------TOKEN-------- $token');
+
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     isLoggedIn = (prefs.getBool('isLoggedIn') == null)
         ? false
         : prefs.getBool('isLoggedIn');
 
     mobile = prefs.getString("mobile");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.instance.getInitialMessage();
+
+    FirebaseMessaging.onMessage.listen((message) {
+      if (message.notification != null) {
+        print(message.notification.body);
+        print(message.notification.title);
+      }
+    });
   }
 
   @override
