@@ -34,174 +34,31 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
 
     print("----file video upload----$videoFilePath $videoFileName");
 
-    var dio = Dio();
+    // var dio = Dio();
 
-    FormData formData = new FormData.fromMap(
-      {
-        "files.videos": await MultipartFile.fromFile(
-          videoFilePath,
-          filename: videoFileName,
-          // contentType: MediaType(mimeType?[0], mimeType?[1]),
-        ),
-      },
-    );
-
-    Response response = await dio.put(
-      'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}',
-      data: formData,
-      options: Options(),
-    );
-
-    // String path = videoFilePath;
-
-    // var request = http.MultipartRequest(
-    //   'PUT',
-    //   Uri.parse(
-    //       'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}'),
+    // FormData formData = new FormData.fromMap(
+    //   {
+    //     "files.videos": await MultipartFile.fromFile(
+    //       videoFilePath,
+    //       filename: videoFileName,
+    //       // contentType: MediaType(mimeType?[0], mimeType?[1]),
+    //     ),
+    //   },
     // );
 
-    // var multipartFile = await http.MultipartFile.fromPath(
-    //     videoFileName, path); //returns a Future<MultipartFile>
-    // request.files.add(multipartFile);
-    // http.StreamedResponse response = await request.send();
-    // final respStr = await response.stream.bytesToString();
-    // var jsonData = jsonDecode(respStr);
-    // if (response.statusCode == 200) {
-    //   print(response);
-    //   // success
-    // } else {
-    //   print(response);
-    //   // error
-    // }
-
-    // Response response;
-    // Response responsebyte;
-    // var dio = Dio();
-
-    // responsebyte = await dio.get(videoFilePath);
-
-    // await dio.put(
-    //     'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}', data: );
-
-    // // print(response);
-
-    // var headers = {};
-    // var request = http.Request(
-    //     'PUT',
-    //     Uri.parse(
-    //         'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/gorilla.png'));
-    // request.body = responsebyte.data;
-
-    // request.headers.addAll(headers);
-
-    // http.StreamedResponse res = await request.send();
-
-    // if (res.statusCode == 200) {
-    //   print(await res.stream.bytesToString());
-    // } else {
-    //   print(res.reasonPhrase);
-    // }
-
-    // var file = XFile(videoFilePath).toString();
-
-    // var dio = Dio();
-
-    // var blob = await dio.download(videoFilePath, videoFilePath + '/abc');
-
-    // // var headers = {'Content-Type': 'image/png'};
-    // var request = http.Request(
-    //     'PUT',
-    //     Uri.parse(
-    //         'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}'));
-    // request.body = file;
-
-    // // request.headers.addAll(headers);
-
-    // http.StreamedResponse response = await request.send();
-
-    // if (response.statusCode == 200) {
-    //   print(await response.stream.bytesToString());
-    // } else {
-    //   print(response.reasonPhrase);
-    // }
-
-    // print('File information:');
-    // print('- Path: ${file.path}');
-    // print('- Name: ${file.name}');
-    // print('- MIME type: ${file.mimeType}');
-
-    // Response response;
-    // var dio = Dio();
-
-    // String fileName = videoFileName;
-    // FormData formData = FormData.fromMap({
-    //   "file": await MultipartFile.fromFile(videoFilePath, filename: fileName),
-    // });
-
-    // response = await dio.put(
-    //     'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}',
-    //     data: formData);
-
-    // print(response);
-
-    // dynamic file = await File(videoFilePath);
-
-    // var uri = Uri.parse(
-    //     'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}');
-    // var response = await http.put(
-    //   uri,
-    //   // headers: {
-    //   //   HttpHeaders.authorizationHeader: 'Basic xxxxxxx', // insert correct credentials here
-    //   //   'Content-Type': 'image/jpeg',
-    //   // },
-    //   body: await file.readAsBytes(),
+    // Response response = await dio.put(
+    //   'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}',
+    //   data: formData,
+    //   options: Options(),
     // );
-    // print(response.statusCode);
 
-    // final myFile = File(videoFilePath).readAsStringSync();
-
-    // print(myFile);
-
-    // // var headers = {'Content-Type': 'image/png'};
-    // var request = http.Request(
-    //     'PUT',
-    //     Uri.parse(
-    //         'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}'));
-    // request.body = myFile;
-
-    // // request.headers.addAll(headers);
-
-    // http.StreamedResponse response = await request.send();
-
-    // if (response.statusCode == 200) {
-    //   print(await response.stream.bytesToString());
-    // } else {
-    //   print(response.reasonPhrase);
-    // }
-
-    // dynamic file = await File(videoFilePath);
-
-    // Future.delayed(Duration(seconds: 10), () {
-    //   Navigator.pushAndRemoveUntil(
-    //       context,
-    //       MaterialPageRoute(
-    //           builder: (context) => CameraInterviewScreen(mode: "done")),
-    //       (route) => false);
-    // });
-
-    // await client.storage
-    //     .from("interviewvideos")
-    //     .upload(videoFileName, file)
-    //     .then((value) {
-    //   if (value.error == null) {
-    //     print("Value >>>> ${value.data}");
-    //     final uploadString = value.data;
-    //     OnboardingOperation.updateOnboarding(
-    //         uploadString, 'video', true, context);
-    //   } else {
-    //     print("Error >>>> ${value.error}");
-    //   }
-    // });
+    Future.delayed(Duration(seconds: 10), () {
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CameraInterviewScreen(mode: "done")),
+          (route) => false);
+    });
   }
 
   Widget _doneInterviewWidget() {
