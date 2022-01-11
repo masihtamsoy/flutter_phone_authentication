@@ -22,10 +22,7 @@ class CameraInterviewScreen extends StatefulWidget {
 }
 
 class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
-  void _onFileUpload(context) async {
-    final client = supa.SupabaseClient(
-        SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
-
+  Future _onFileUpload(context) async {
     String videoFileName =
         Provider.of<ExamEvaluateModal>(context, listen: false).video_file_name;
 
@@ -34,31 +31,25 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
 
     print("----file video upload----$videoFilePath $videoFileName");
 
-    // var dio = Dio();
+    var dio = Dio();
 
-    // FormData formData = new FormData.fromMap(
-    //   {
-    //     "files.videos": await MultipartFile.fromFile(
-    //       videoFilePath,
-    //       filename: videoFileName,
-    //       // contentType: MediaType(mimeType?[0], mimeType?[1]),
-    //     ),
-    //   },
-    // );
+    FormData formData = new FormData.fromMap(
+      {
+        "files.videos": await MultipartFile.fromFile(
+          videoFilePath,
+          filename: videoFileName,
+          // contentType: MediaType(mimeType?[0], mimeType?[1]),
+        ),
+      },
+    );
 
-    // Response response = await dio.put(
-    //   'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}',
-    //   data: formData,
-    //   options: Options(),
-    // );
+    Response response = await dio.put(
+      'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}',
+      data: formData,
+      options: Options(),
+    );
 
-    Future.delayed(Duration(seconds: 10), () {
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-              builder: (context) => CameraInterviewScreen(mode: "done")),
-          (route) => false);
-    });
+    return response;
   }
 
   Widget _doneInterviewWidget() {
@@ -132,33 +123,43 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
   }
 
   void showAlert(BuildContext context) async {
-    await _onFileUpload(context);
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) => ConstrainedBox(
-        constraints: const BoxConstraints.expand(),
-        // width: 200,
-        child: AlertDialog(
-          title: Row(
-            children: [
-              const CircularProgressIndicator(),
-              SizedBox(
-                width: 20,
-              ),
-              Text('Stay calm, uploading',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                  textAlign: TextAlign.left),
-            ],
+      builder: (context) {
+        _onFileUpload(context).then((response) {
+          Navigator.of(context).pop(true);
+
+          // based on response.statusCode do required
+          // if (response)
+
+          // Make request to dashhire DB and save the video links in onboarding table
+        });
+
+        return ConstrainedBox(
+          constraints: const BoxConstraints.expand(),
+          // width: 200,
+          child: AlertDialog(
+            title: Row(
+              children: [
+                const CircularProgressIndicator(),
+                SizedBox(
+                  width: 20,
+                ),
+                Text('Stay calm, uploading',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    textAlign: TextAlign.left),
+              ],
+            ),
+            content: Wrap(
+              children: [
+                Text(
+                    'We are sending your pitch to the recruiter. This may take some minutes depending on internet speed')
+              ],
+            ),
           ),
-          content: Wrap(
-            children: [
-              Text(
-                  'We are sending your pitch to the recruiter. This may take some minutes depending on internet speed')
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
