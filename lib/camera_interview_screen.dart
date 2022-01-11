@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth_project/home_list.dart';
 import 'package:phone_auth_project/widgets/button_widget.dart';
@@ -8,6 +10,8 @@ import './components/video_full.dart';
 import 'package:supabase/supabase.dart' as supa;
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 class CameraInterviewScreen extends StatefulWidget {
   final String mode;
@@ -30,7 +34,23 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
 
     print("----file video upload----$videoFilePath $videoFileName");
 
-    dynamic file = await File(videoFilePath);
+    // var dio = Dio();
+
+    // FormData formData = new FormData.fromMap(
+    //   {
+    //     "files.videos": await MultipartFile.fromFile(
+    //       videoFilePath,
+    //       filename: videoFileName,
+    //       // contentType: MediaType(mimeType?[0], mimeType?[1]),
+    //     ),
+    //   },
+    // );
+
+    // Response response = await dio.put(
+    //   'https://6gfenv2dk7.execute-api.ap-south-1.amazonaws.com/stage/dashhirebucky/${videoFileName}',
+    //   data: formData,
+    //   options: Options(),
+    // );
 
     Future.delayed(Duration(seconds: 10), () {
       Navigator.pushAndRemoveUntil(
@@ -39,20 +59,6 @@ class _CameraInterviewScreenState extends State<CameraInterviewScreen> {
               builder: (context) => CameraInterviewScreen(mode: "done")),
           (route) => false);
     });
-
-    // await client.storage
-    //     .from("interviewvideos")
-    //     .upload(videoFileName, file)
-    //     .then((value) {
-    //   if (value.error == null) {
-    //     print("Value >>>> ${value.data}");
-    //     final uploadString = value.data;
-    //     OnboardingOperation.updateOnboarding(
-    //         uploadString, 'video', true, context);
-    //   } else {
-    //     print("Error >>>> ${value.error}");
-    //   }
-    // });
   }
 
   Widget _doneInterviewWidget() {
