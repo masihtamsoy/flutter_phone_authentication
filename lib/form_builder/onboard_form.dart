@@ -112,8 +112,9 @@ class _OnboardingScreen extends State<OnboardingScreen> {
   void setOnboardingData(context, dynamic _formKey) async {
     String mobile =
         Provider.of<ExamEvaluateModal>(context, listen: false).mobile;
+    String referredCode =
+        Provider.of<ExamEvaluateModal>(context, listen: false).referredCode;
 
-    print("$mobile >>>>");
     SupabaseService supabase = new SupabaseService();
     final selectResponse = await supabase.insert("onboarding", [
       {
@@ -124,9 +125,10 @@ class _OnboardingScreen extends State<OnboardingScreen> {
         "work_exp": _formKey.currentState.fields['workExp'].value,
         "job_title": _formKey.currentState.fields['jobTitle'].value,
         "company_name":
-            _formKey.currentState.fields['currentCompanyName'].value,
+        _formKey.currentState.fields['currentCompanyName'].value,
         "monthly_income":
-            _formKey.currentState.fields['currentMonthlyIncome'].value,
+        _formKey.currentState.fields['currentMonthlyIncome'].value,
+        "referred_code" :referredCode,
       }
     ]);
 
@@ -139,7 +141,7 @@ class _OnboardingScreen extends State<OnboardingScreen> {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => LocationCapture()),
-          (route) => false);
+              (route) => false);
       // print("<><><><><><><><><><><>< $data");
     } else {
       // print('>>>>>>>>>>>>>>>>>>>selectResponse.error: ${selectResponse.error}');
