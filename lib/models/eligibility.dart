@@ -16,6 +16,7 @@ class ExamEvaluateModal with ChangeNotifier {
   // JSON is been converted to string and been moved around in state
   String _ques_journey = "";
   String _mobile = "";
+  String _referred_code = "";
 
   int _mark_scored = 0;
 
@@ -32,6 +33,8 @@ class ExamEvaluateModal with ChangeNotifier {
   get ques_journey => _ques_journey;
 
   String get mobile => _mobile;
+
+  String get referredCode => _referred_code;
 
   String get company_code => _company_code;
 
@@ -67,7 +70,9 @@ class ExamEvaluateModal with ChangeNotifier {
   void set_mobile(String mobile) {
     _mobile = mobile;
   }
-
+  void set_referred_code(String referredCode){
+    _referred_code = referredCode;
+  }
   // INFO: consider field {answer} , match user's 'ans' with field answer and allocate mark
   void assignMark(Map field, String ans) {
     // INFO: start evaluating answer when, question comes with answer
@@ -80,7 +85,7 @@ class ExamEvaluateModal with ChangeNotifier {
 
       _quesion_answer.update(
         name,
-        (value) => value,
+            (value) => value,
         ifAbsent: () => ans,
       );
 
@@ -89,7 +94,7 @@ class ExamEvaluateModal with ChangeNotifier {
         int mark = field['mark'];
         _question_answer_mark.update(
           name,
-          (value) => mark,
+              (value) => mark,
           ifAbsent: () => mark,
         );
       }

@@ -5,11 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth_project/login.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:phone_auth_project/referral_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter_countdown_timer/index.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import './form_builder/ques_journey.dart';
 import './../models/eligibility.dart';
 import './congrates.dart';
@@ -96,6 +97,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _launchWhatsapp() async{
+    const url = "https://wa.me/?text=Your friend has referred you for this q job. Download this app and use his referral code : %20TADA%20Use company code : %20SMART%20Use this link to apply for job:https://app.dashhire.co/jobs/referal?=tada&code?=smart";
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw "Could not launch $url";
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -121,172 +130,184 @@ class _HomeScreenState extends State<HomeScreen> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => LoginScreen()),
-                            (route) => false);
+                                (route) => false);
                       },
                     )
                   ],
                 ),
                 body: Container(
-                  child: Column(
-                    children: [
-                      // Show File upload card
-                      // FileUpload(),
-                      // Show video upload card
-                      CameraAppCard(),
-                      // Show jobs card
-                      _getTotalJobs() == 0
-                          ? Text('')
-                          : ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              shrinkWrap: true,
-                              itemCount: _getTotalJobs(), // the length
-                              itemBuilder: (context, index) {
-                                String title = _getJob(index)['title'];
-                                String company_name =
-                                    _getJob(index)['company_name'];
-                                String location = _getJob(index)['location'];
-                                String salary = _getJob(index)['salary'];
+                    child: Stack(
+                      children: [
+                        Column(
+                          children: [
+                            // Show File upload card
+                            // FileUpload(),
+                            // Show video upload card
+                            CameraAppCard(),
+                            // Show jobs card
+                            _getTotalJobs() == 0
+                                ? Text('')
+                                : ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: _getTotalJobs(), // the length
+                                itemBuilder: (context, index) {
+                                  String title = _getJob(index)['title'];
+                                  String company_name =
+                                  _getJob(index)['company_name'];
+                                  String location = _getJob(index)['location'];
+                                  String salary = _getJob(index)['salary'];
 
-                                return Container(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Card(
-                                      child: Column(
-                                        children: [
-                                          ListTile(
-                                            // leading: Icon(Icons.arrow_drop_down_circle),
-                                            title: Text(
-                                              "$title",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            subtitle: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.work),
-                                                    Text('$company_name'),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.location_city),
-                                                    Text('$location'),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            trailing: SvgPicture.network(
-                                              _getJob(index)['icon_uri'],
-                                              semanticsLabel: 'A shark?!',
-                                              placeholderBuilder: (BuildContext
-                                                      context) =>
-                                                  Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              30.0),
-                                                      child:
-                                                          const CircularProgressIndicator()),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.money),
-                                                Text(
-                                                  '$salary',
-                                                  style: TextStyle(
-                                                      color: Colors.black
-                                                          .withOpacity(0.6)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          ButtonBar(
-                                            alignment: MainAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                "Test comprises of MCQ and aptitude",
-                                                style: TextStyle(fontSize: 10),
+                                  return Container(
+                                      padding: const EdgeInsets.only(bottom: 8),
+                                      child: Card(
+                                        child: Column(
+                                          children: [
+                                            ListTile(
+                                              // leading: Icon(Icons.arrow_drop_down_circle),
+                                              title: Text(
+                                                "$title",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold),
                                               ),
-                                              ConstrainedBox(
-                                                constraints:
-                                                    const BoxConstraints
-                                                            .tightFor(
-                                                        width: 110, height: 40),
-                                                child: MaterialButton(
-                                                  color: Theme.of(context)
-                                                      .primaryColor,
-                                                  onPressed: () {
-                                                    // maintain state: job_selected
-                                                    Provider.of<ExamEvaluateModal>(
-                                                            context,
-                                                            listen: false)
-                                                        .job_select(
-                                                            _getJob(index));
-
-                                                    /// Start counter global
-                                                    // initiate CountdownTimer-------
-                                                    CountdownController
-                                                        countdownController =
-                                                        CountdownController(
-                                                            duration: Duration(
-                                                                // seconds: 10,
-                                                                minutes: 10),
-                                                            onEnd: () {
-                                                              /// open dialog box: with 'continue'
-                                                              /// msg: Your time to complete test has expired. Your application has been submitted!
-                                                              /// goto congrates page
-                                                              print(
-                                                                  '-----onEnd---- counter---minutes--');
-
-                                                              Navigator.pushAndRemoveUntil(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                      builder: (context) => Congrates(
-                                                                          isTimeouted:
-                                                                              true)),
-                                                                  (route) =>
-                                                                      false);
-                                                            });
-
-                                                    countdownController.start();
-
-                                                    Provider.of<ExamEvaluateModal>(
-                                                            context,
-                                                            listen: false)
-                                                        .countdownController_select(
-                                                            countdownController);
-
-                                                    //-----------------------------
-
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              new QuestionJourney(
-                                                                  screenIndex:
-                                                                      0)),
-                                                    );
-                                                  },
-                                                  child: Text(
-                                                    'Start Test'.toUpperCase(),
+                                              subtitle: Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.work),
+                                                      Text('$company_name'),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.location_city),
+                                                      Text('$location'),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              trailing: SvgPicture.network(
+                                                _getJob(index)['icon_uri'],
+                                                semanticsLabel: 'A shark?!',
+                                                placeholderBuilder: (BuildContext
+                                                context) =>
+                                                    Container(
+                                                        padding:
+                                                        const EdgeInsets.all(
+                                                            30.0),
+                                                        child:
+                                                        const CircularProgressIndicator()),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(16.0),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.money),
+                                                  Text(
+                                                    '$salary',
                                                     style: TextStyle(
-                                                        color: Colors.white),
+                                                        color: Colors.black
+                                                            .withOpacity(0.6)),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            ButtonBar(
+                                              alignment: MainAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  "Test comprises of MCQ and aptitude",
+                                                  style: TextStyle(fontSize: 10),
+                                                ),
+                                                ConstrainedBox(
+                                                  constraints:
+                                                  const BoxConstraints
+                                                      .tightFor(
+                                                      width: 110, height: 40),
+                                                  child: MaterialButton(
+                                                    color: Theme.of(context)
+                                                        .primaryColor,
+                                                    onPressed: () {
+                                                      // maintain state: job_selected
+                                                      Provider.of<ExamEvaluateModal>(
+                                                          context,
+                                                          listen: false)
+                                                          .job_select(
+                                                          _getJob(index));
+
+                                                      /// Start counter global
+                                                      // initiate CountdownTimer-------
+                                                      CountdownController
+                                                      countdownController =
+                                                      CountdownController(
+                                                          duration: Duration(
+                                                            // seconds: 10,
+                                                              minutes: 10),
+                                                          onEnd: () {
+                                                            /// open dialog box: with 'continue'
+                                                            /// msg: Your time to complete test has expired. Your application has been submitted!
+                                                            /// goto congrates page
+                                                            print(
+                                                                '-----onEnd---- counter---minutes--');
+
+                                                            Navigator.pushAndRemoveUntil(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                    builder: (context) => Congrates(
+                                                                        isTimeouted:
+                                                                        true)),
+                                                                    (route) =>
+                                                                false);
+                                                          });
+
+                                                      countdownController.start();
+
+                                                      Provider.of<ExamEvaluateModal>(
+                                                          context,
+                                                          listen: false)
+                                                          .countdownController_select(
+                                                          countdownController);
+
+                                                      //-----------------------------
+
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                            new QuestionJourney(
+                                                                screenIndex:
+                                                                0)),
+                                                      );
+                                                    },
+                                                    child: Text(
+                                                      'Start Test'.toUpperCase(),
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          // Image.asset('assets/card-sample-image-2.jpg'),
-                                        ],
-                                      ),
-                                    ));
-                              }),
-                    ],
-                  ),
+                                              ],
+                                            ),
+                                            // Image.asset('assets/card-sample-image-2.jpg'),
+                                          ],
+                                        ),
+                                      ));
+                                }),
+                          ],
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          child: GestureDetector(
+                              onTap: _launchWhatsapp,
+                              child: ReferralCard()
+                          ),
+                        ),
+                      ],
+                    )
                 ),
               ); // snapshot.data  :- get your object which is pass from your downloadData() function
           }
