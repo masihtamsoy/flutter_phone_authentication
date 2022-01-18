@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth_project/login.dart';
@@ -297,8 +299,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ));
                             }),
 
-                    GestureDetector(
-                        onTap: _launchWhatsapp, child: ReferralCard()),
+                    kIsWeb
+                        ? GestureDetector(
+                            onTap: _launchWhatsapp, child: ReferralCard())
+                        : null,
                   ],
                 )),
               ); // snapshot.data  :- get your object which is pass from your downloadData() function
