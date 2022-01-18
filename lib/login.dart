@@ -19,7 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String form = json.encode({
     'disclaimer': "By continuing you agree to our Terms and Condition",
     'fields': [
-      {'name': 'mobile',
+      {
+        'name': 'mobile',
         'prefix': '+91',
         'type': 'TextInput',
         'keyboardType': 'number',
@@ -32,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         'name': 'referredCode',
         'type': 'TextInput',
-        'labelText': "Referral Code",
+        'labelText': "Referral Code(Optional)",
         // not work
         "validation": {
           "required": false,
@@ -198,31 +199,28 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ]),
               ),
-              Column(
-                  children: [
-                    JsonSchema(
-                      // INFO: response here is context
-                        onSubmitSave: (dynamic response, _formKey) {
-                          String mobile =
-                              _formKey.currentState.fields['mobile'].value;
-                          String referredCode =
-                              _formKey.currentState.fields['referredCode'].value;
+              Column(children: [
+                JsonSchema(
+                    // INFO: response here is context
+                    onSubmitSave: (dynamic response, _formKey) {
+                      String mobile =
+                          _formKey.currentState.fields['mobile'].value;
+                      String referredCode =
+                          _formKey.currentState.fields['referredCode'].value;
 
-                          // INFO: save user mobile
-                          Provider.of<ExamEvaluateModal>(context, listen: false)
-                              .set_mobile(mobile);
-                          Provider.of<ExamEvaluateModal>(context, listen: false)
-                              .set_referred_code(referredCode);
+                      // INFO: save user mobile
+                      Provider.of<ExamEvaluateModal>(context, listen: false)
+                          .set_mobile(mobile);
+                      Provider.of<ExamEvaluateModal>(context, listen: false)
+                          .set_referred_code(referredCode);
 
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => OTPScreen(mobile)));
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => OTPScreen(mobile)));
 
-                          print("response $response");
-                        },
-                        form: form),
-
-                  ]
-              ),
+                      print("response $response");
+                    },
+                    form: form),
+              ]),
             ],
           ),
         ));
