@@ -35,22 +35,25 @@ class DateTimeConstants {
 
   static getDates() {
     final _currentDate = DateTime.now();
+    final tomorrow =
+        DateTime(_currentDate.year, _currentDate.month, _currentDate.day + 1);
     final _dayFormatter = DateFormat('d');
     final _monthFormatter = DateFormat('MMM');
+    final _yearFormatter = DateFormat('yyyy');
     final dates = [];
 
     for (int i = 0; i < 7; i++) {
-      final date = _currentDate.add(Duration(days: i));
-      String readDate =
-          _dayFormatter.format(date) + " " + _monthFormatter.format(date);
+      final date = tomorrow.add(Duration(days: i));
+      // String readDate =
+      //     _dayFormatter.format(date) + " " + _monthFormatter.format(date);
+      // print(date);
+      String readData = _yearFormatter.format(date) +
+          "-" +
+          _monthFormatter.format(date) +
+          "-" +
+          _dayFormatter.format(date);
 
-      dates.add(readDate);
-      // dates.add(Column(
-      //   children: [
-      //     Text(_dayFormatter.format(date)),
-      //     Text(_monthFormatter.format(date)),
-      //   ],
-      // ));
+      dates.add(readData);
     }
 
     // print("---------${dates}");

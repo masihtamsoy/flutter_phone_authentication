@@ -25,6 +25,7 @@ import './models/eligibility.dart';
 import './company_code.dart';
 import './available_slot.dart';
 import './schedule_interview.dart';
+import './fill_availability.dart';
 // import './models/shared_preferences.dart';
 // import './models/user.dart';
 
@@ -210,6 +211,7 @@ class _MyAppState extends State<MyApp> {
                         '/home': (context) => HomeScreen(),
                         '/available-slots': (context) => AvailableSlot(),
                         '/schedule-interview': (context) => ScheduleInterview(),
+                        '/fill-availability': (context) => FillAvailability(),
                       },
                       home: AnimatedSplashScreen(
                           duration: 800,
