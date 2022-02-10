@@ -30,6 +30,17 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
           },
         },
         {
+          'name': 'companyName',
+          'prefix': '',
+          'type': 'TextInput',
+          // 'keyboardType': 'number',
+          'labelText': "Company Name",
+          // not work
+          "validation": {
+            "required": true,
+          },
+        },
+        {
           'name': 'interview',
           'prefix': '',
           'type': 'Dropdown',
@@ -75,6 +86,7 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
         .from('interviewer_availibilty')
         .select('*')
         .is_('availaiblity', true)
+        .is_('scheduled', false)
         .execute();
     // .is_('availaiblity', true)
 
@@ -150,33 +162,34 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
                       final updateResponse = await client
                           .from("interviewer_availibilty")
                           .update({'scheduled': true})
-                          .eq('interviewer_email', email)
+                          .eq('id', availabilityId)
                           .execute();
 
-                      if (updateResponse.error == null) {
-                        print('response.data: ${updateResponse.data}');
-                        FocusScope.of(context).unfocus();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Success Added')));
-                      } else {
-                        // print('>>>>>>>>>>>>>>>>>>>updateResponse.error: ${updateResponse.error}');
-                        FocusScope.of(context).unfocus();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(updateResponse.error.message)));
-                      }
+                      // if (updateResponse.error == null) {
+                      //   print('response.data: ${updateResponse.data}');
+                      //   FocusScope.of(context).unfocus();
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //       SnackBar(content: Text('Success Added')));
+                      // } else {
+                      //   // print('>>>>>>>>>>>>>>>>>>>updateResponse.error: ${updateResponse.error}');
+                      //   FocusScope.of(context).unfocus();
+                      //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      //       content: Text(updateResponse.error.message)));
+                      // }
 
                       final insertResponse =
                           await client.from("scheduled_interviews").insert({
                         'interviewer_email': email,
                         'candidate_email': _formKey
                             .currentState.fields['candidateEmail'].value,
+                        'company_name':
+                            _formKey.currentState.fields['companyName'].value,
                         'availability_id': availabilityId,
                         'scheduled': true,
-                        'slot_date': slotDate,
-                        'slot_time': slotTime
                       }).execute();
 
                       if (insertResponse.error == null) {
+                        setState(() {});
                         print('response.data: ${insertResponse.data}');
                         FocusScope.of(context).unfocus();
                         ScaffoldMessenger.of(context).showSnackBar(
