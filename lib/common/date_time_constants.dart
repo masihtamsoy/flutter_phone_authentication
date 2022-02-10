@@ -24,7 +24,7 @@ class DateTimeConstants {
     /// get time slots
     final startTime = TimeOfDay(hour: 9, minute: 0);
     final endTime = TimeOfDay(hour: 22, minute: 0);
-    final step = Duration(minutes: 30);
+    final step = Duration(minutes: 60);
 
     final times = getTimesUtil(startTime, endTime, step)
         .map((tod) => tod.format(context))
