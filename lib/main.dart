@@ -23,6 +23,8 @@ import './common/theme.dart';
 import './models/eligibility.dart';
 
 import './company_code.dart';
+import './available_slot.dart';
+import './schedule_interview.dart';
 // import './models/shared_preferences.dart';
 // import './models/user.dart';
 
@@ -206,6 +208,8 @@ class _MyAppState extends State<MyApp> {
 
                       routes: {
                         '/home': (context) => HomeScreen(),
+                        '/available-slots': (context) => AvailableSlot(),
+                        '/schedule-interview': (context) => ScheduleInterview(),
                       },
                       home: AnimatedSplashScreen(
                           duration: 800,
