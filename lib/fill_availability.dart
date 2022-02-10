@@ -87,7 +87,7 @@ class _FillAvailabilityState extends State<FillAvailability> {
                     await client.from("interviewer_availibilty").insert({
                   'interviewer_email': interviewerEmail,
                   'availaiblity': true,
-                  'scheduled': true,
+                  'scheduled': false,
                   'slot_date': slotDate,
                   'slot_time': slotTime
                 }).execute();
@@ -100,9 +100,9 @@ class _FillAvailabilityState extends State<FillAvailability> {
 
                 if (updateResponse.error == null) {
                   print('response.data: ${updateResponse.data}');
-                  // data = json.encode({"jobs": updateResponse.data});
-
-                  // print("<><><><><><><><><><><>< $data");
+                  FocusScope.of(context).unfocus();
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text('Success Added')));
                 } else {
                   // print('>>>>>>>>>>>>>>>>>>>updateResponse.error: ${updateResponse.error}');
                   FocusScope.of(context).unfocus();

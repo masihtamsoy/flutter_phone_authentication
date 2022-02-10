@@ -30,35 +30,35 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
           },
         },
         {
-          'name': 'interviewerEmail',
+          'name': 'interview',
           'prefix': '',
           'type': 'Dropdown',
           'options': getInterviewersOption(),
           // 'keyboardType': 'number',
-          'labelText': "Interviewer Email",
+          'labelText': "Interview",
           // not work
           "validation": {
             "required": true,
           },
         },
-        {
-          'name': 'slotDate',
-          'type': 'Dropdown',
-          'labelText': "Slot Date",
-          'options': DateTimeConstants.getDates(),
-          "validation": {
-            "required": true,
-          },
-        },
-        {
-          'name': 'slotTime',
-          'type': 'Dropdown',
-          'labelText': "Slot Time",
-          'options': DateTimeConstants.getTimes(context),
-          "validation": {
-            "required": true,
-          },
-        },
+        // {
+        //   'name': 'slotDate',
+        //   'type': 'Dropdown',
+        //   'labelText': "Slot Date",
+        //   'options': DateTimeConstants.getDates(),
+        //   "validation": {
+        //     "required": true,
+        //   },
+        // },
+        // {
+        //   'name': 'slotTime',
+        //   'type': 'Dropdown',
+        //   'labelText': "Slot Time",
+        //   'options': DateTimeConstants.getTimes(context),
+        //   "validation": {
+        //     "required": true,
+        //   },
+        // },
       ]
     });
 
@@ -76,6 +76,7 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
         .select('*')
         .is_('availaiblity', true)
         .execute();
+    // .is_('availaiblity', true)
 
     String data = json.encode({});
 
@@ -98,17 +99,19 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
   List getInterviewersOption() {
     List options = [];
     interviewerAvailable.forEach((element) {
-      options.add(element['interviewer_email']);
+      String optionStr =
+          "${element['interviewer_email']} | ${element['slot_date']} | ${element['slot_time']}";
+      options.add(optionStr);
     });
     return options;
   }
 
   @override
   Widget build(BuildContext context) {
-    /// get dates
-    print(DateTimeConstants.getDates());
+    // /// get dates
+    // print(DateTimeConstants.getDates());
 
-    print(DateTimeConstants.getTimes(context));
+    // print(DateTimeConstants.getTimes(context));
 
     return FutureBuilder(
         future:
@@ -123,24 +126,71 @@ class _ScheduleInterviewState extends State<ScheduleInterview> {
               return Container(
                 child: JsonSchema(
                     form: _createForm(context),
-                    onSubmitSave: (dynamic response, _formKey) {
-                      print('on submit ${_formKey.currentState.fields}');
+                    onSubmitSave: (dynamic response, _formKey) async {
+                      List val = _formKey.currentState.fields['interview'].value
+                          .split(" | ");
+                      String email = val[0];
+                      String slotDate = val[1];
+                      String slotTime = val[2];
+
+                      print(interviewerAvailable);
+                      var availabilityId;
+
+                      interviewerAvailable.forEach((element) {
+                        if (element['interviewer_email'] == email &&
+                            element['slot_date'] == slotDate &&
+                            element['slot_time'] == slotTime) {
+                          availabilityId = element['id'];
+                        }
+                      });
+                      print("----${availabilityId}");
+
+                      final client = supa.SupabaseClient(
+                          SupaConstants.supabaseUrl, SupaConstants.supabaseKey);
+                      final updateResponse = await client
+                          .from("interviewer_availibilty")
+                          .update({'scheduled': true})
+                          .eq('interviewer_email', email)
+                          .execute();
+
+                      if (updateResponse.error == null) {
+                        print('response.data: ${updateResponse.data}');
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Success Added')));
+                      } else {
+                        // print('>>>>>>>>>>>>>>>>>>>updateResponse.error: ${updateResponse.error}');
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(updateResponse.error.message)));
+                      }
+
+                      final insertResponse =
+                          await client.from("scheduled_interviews").insert({
+                        'interviewer_email': email,
+                        'candidate_email': _formKey
+                            .currentState.fields['candidateEmail'].value,
+                        'availability_id': availabilityId,
+                        'scheduled': true,
+                        'slot_date': slotDate,
+                        'slot_time': slotTime
+                      }).execute();
+
+                      if (insertResponse.error == null) {
+                        print('response.data: ${insertResponse.data}');
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Success Added')));
+                      } else {
+                        // print('>>>>>>>>>>>>>>>>>>>insertResponse.error: ${insertResponse.error}');
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(insertResponse.error.message)));
+                      }
                     }),
               );
             }
           }
         });
-
-    // return Scaffold(
-    //     appBar: AppBar(
-    //       title: Text('Schedule Interview'),
-    //     ),
-    //     body: Container(
-    //       child: JsonSchema(
-    //           form: _createForm(context),
-    //           onSubmitSave: (dynamic response, _formKey) {
-    //             print('on submit ${_formKey.currentState.fields}');
-    //           }),
-    //     ));
   }
 }
